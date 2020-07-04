@@ -9,13 +9,16 @@ sys.path.append('/home/pi/2020/Detection/Land')
 sys.path.append('/home/pi/2020/Detection/ParachuteDetection')
 sys.path.append('/home/pi/SensorModuleTest/Melting')
 sys.path.append('/home/pi/SensorModuleTest/Motor')
-sys.path.append('/home/pi/Detection/Others')
+sys.path.append('/home/pi/Detection/Others')　
+sys.path.append('/home/pi/Detection')　
+
 import time
 import serial
 import pigpio
 import BME280
 import TSL2561
 import traceback
+#import runtest
 
 anylux = 0
 anypress = 0.3
@@ -31,3 +34,101 @@ luxreleasejudge = 0
 pressreleasejudge = 0
 
 PhaseChk = 0
+
+###ここからコピー
+luxstr = ["lux1", "lux2"]			#variable to show lux returned variables
+bme280str = ["temp", "pres", "hum", "alt"]	#variable to show bme280 returned variables
+bmx055str = ["accx", "accy", "accz", "gyrx", "gyry", "gyrz", "dirx", "diry", "dirz"]	#variable to show bmx055 returned variables
+gpsstr = ["utctime", "lat", "lon", "sHeight", "gHeight"]				#variable to show GPS returned variables
+
+gpsData=[0.0,0.0,0.0,0.0,0.0]
+bme280Data=[0.0,0.0,0.0,0.0]
+bmx055data=[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]
+
+t_setup = 60	#variable to set waiting time after setup
+t = 1			#Unknown Variable
+x = 300			#time for release(loopx)
+y = 180			#time for land(loopy)
+
+t_start  = 0.0	#time when program started
+
+#lcount=0
+acount=0
+Pcount=0
+GAcount=0
+deltHmax=5
+luxjudge = 0
+pressjudge=0
+pi=pigpio.pi()
+
+paraExsist = 0 	#variable used for Para Detection
+
+phaseLog = "/home/pi/log/phaseLog.txt"
+waitingLog = "/home/pi/log/waitingLog.txt"
+releaseLog = "/home/pi/log/releaseLog.txt"
+landingLog = "/home/pi/log/landingLog.txt"
+meltingLog = "/home/pi/log/meltingLog.txt"
+paraAvoidanceLog = "/home/pi/log/paraAvoidanceLog.txt"
+
+def setup():
+	global phaseChk
+
+	pi.set_mode(22,pigpio.OUTPUT)
+	pi.write(22,1)	#IM920	Turn On
+	pi.write(17,0)	#meltPin off
+	time.sleep(1)
+	BME280.bme280_setup()
+	BME280.bme280_calib_param()
+	BMX055.bmx055_setup()
+	GPS.openGPS()
+
+	with open(phaseLog, 'a') as f:
+		pass
+
+	phaseChk = int(Other.phaseCheck(phaseLog))
+	print(phaseChk)
+
+def close():
+	GPS.closeGPS()
+	pi.write(22, 0)
+	pi.write(17,0)
+	run = runtest.Run()　#変更しました
+	run.stop()
+
+if __name__ == "__main__":
+	try:
+		t_start = time.time() 
+		# ------------------- Setup Phase --------------------- #
+		print("Program Start  {0}".format(time.time())) #{}の中の0はなくてもいい
+		setup()
+		print(phaseChk)
+		IM920.Send("Start")
+
+		# ------------------- Waiting Phase --------------------- #
+		Other.saveLog(phaseLog, "2", "Waiting Phase Started", time.time() - t_start)
+		if(phaseChk <= 2):
+			t_wait_start = time.time()
+			while(time.time() - t_wait_start <= t_setup):
+				Other.saveLog(waitingLog, time.time() - t_start, GPS.readGPS(), BME280.bme280_read(), TSL2561.readLux(), BMX055.bmx055_read())
+				print("Waiting")
+				IM920.Send("Sleep")
+				time.sleep(1)
+			IM920.Send("Waiting Finished")
+			pi.write(22, 0)		#IM920 Turn Off
+
+		# ------------------- Melting Phase ------------------- #
+		IM920.Send("Melt")
+		Other.saveLog(phaseLog,"5", "Melting Phase Started", time.time() - t_start)
+		if(phaseChk <= 5):
+			print("Melting Phase Started")
+			Other.saveLog(meltingLog, time.time() - t_start, GPS.readGPS(), "Melting Start")
+			Melting.Melting()
+			Other.saveLog(meltingLog, time.time() - t_start, GPS.readGPS(), "Melting Finished")
+
+#--- 引継ぎ ---#
+#--- コピー ---#
+# 2019の37~116をコピー
+# 2019の186~193をコピー
+#---変更点---#
+#13行目を追加
+#94,95行目を今年のモーターの仕様に変更
