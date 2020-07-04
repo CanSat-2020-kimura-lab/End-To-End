@@ -1,4 +1,5 @@
 import sys
+###変更が必要
 sys.path.append('/home/pi/SensorModuleTest/BME280')
 sys.path.append('/home/pi/SensorModuleTest/TSL2561')
 sys.path.append('/home/pi/2019/SensorModuleTest/GPS')
@@ -13,11 +14,25 @@ sys.path.append('/home/pi/Detection/Others')　
 sys.path.append('/home/pi/Detection')　
 
 import time
-import serial
+import difflib
 import pigpio
+import serial
+import binascii
+import IM920
+import GPS
+import BMX055
 import BME280
+import Capture
 import TSL2561
-import traceback
+import Release
+import Land
+import GPS
+import Melting
+import Motor
+import TSL2561
+import ParaDetection
+import ParaAvoidance
+import Other
 #import runtest
 
 anylux = 0
@@ -28,6 +43,8 @@ bme280data = []
 gpsdata = []
 luxcount = 0
 presscount = 0
+Pcount = 0
+GAcount = 0
 
 luxreleasejudge = 0
 pressreleasejudge = 0
@@ -53,7 +70,7 @@ y = 180			#time for land(loopy)
 t_start  = 0.0	#time when program started
 
 #lcount=0
-acount=0
+altcount=0
 Pcount=0
 GAcount=0
 deltHmax=5
