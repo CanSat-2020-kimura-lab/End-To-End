@@ -22,7 +22,6 @@ import traceback
 
 anylux = 0
 anypress = 0.3
-Anypress = 0
 anyalt = 0
 luxdata = []
 bme280data = []
@@ -32,6 +31,7 @@ presscount = 0
 
 luxreleasejudge = 0
 pressreleasejudge = 0
+presslandjudge = 0
 
 PhaseChk = 0
 
@@ -41,8 +41,8 @@ bme280str = ["temp", "pres", "hum", "alt"]	#variable to show bme280 returned var
 bmx055str = ["accx", "accy", "accz", "gyrx", "gyry", "gyrz", "dirx", "diry", "dirz"]	#variable to show bmx055 returned variables
 gpsstr = ["utctime", "lat", "lon", "sHeight", "gHeight"]				#variable to show GPS returned variables
 
-gpsData=[0.0,0.0,0.0,0.0,0.0]
-bme280Data=[0.0,0.0,0.0,0.0]
+gpsdata=[0.0,0.0,0.0,0.0,0.0]
+bme280data=[0.0,0.0,0.0,0.0]
 bmx055data=[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]
 
 t_setup = 60	#variable to set waiting time after setup
