@@ -216,7 +216,10 @@ if __name__ == "__main__":
 			Other.saveLog(meltingLog, time.time() - t_start, GPS.readGPS(), "Melting Finished")
 
 		# ------------------- ParaAvoidance Phase ------------------- #	
-		
+		IM920.Send("ParaAvo")
+		Other.saveLog(phaseLog, "6", "ParaAvoidance Phase Started", time.time() - t_start)
+		if(phaseChk <= 6):
+			
 		IM920.Send("Progam Finished")
 		close()
 		
