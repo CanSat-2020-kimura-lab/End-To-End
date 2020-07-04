@@ -116,6 +116,79 @@ if __name__ == "__main__":
 			IM920.Send("Waiting Finished")
 			pi.write(22, 0)		#IM920 Turn Off
 
+		# ------------------- Release Phase ------------------- #
+		Other.saveLog(phaseLog, "3", "Release Phase Started", time.time() - t_start)
+		if(phaseChk <= 3):
+			tx1 = time.time()
+			tx2 = tx1
+			print("Releasing Judgement Program Start  {0}".format(time.time() - t_start))
+			#loopx
+			bme280Data=BME280.bme280_read()
+			while (tx2-tx1<=x):
+				IM920.Send("loopX")
+				#luxjudge = Release.luxjudge()
+				luxjudge = Release.luxdetect()
+				if luxjudge == 1:
+					break
+				#pressjudge = Release.pressjudge()
+				pressjudge = Release.pressdetect()
+				if pressjudge == 1:
+					break
+				else:
+					pass
+		   			#print("now in rocket ,taking photo")
+				Other.saveLog(releaseLog, time.time() - t_start, GPS.readGPS(), TSL2561.readLux(), BME280.bme280_read(), BMX055.bmx055_read())
+				#Other.saveLog(releaseLog, time.time() - t_start, GPS.readGPS(), BME280.bme280_read(), BMX055.bmx055_read())
+				time.sleep(0.5)
+
+				Other.saveLog(releaseLog, time.time() - t_start, GPS.readGPS(), TSL2561.readLux(), BME280.bme280_read(), BMX055.bmx055_read())
+				#Other.saveLog(releaseLog, time.time() - t_start, GPS.readGPS(), BME280.bme280_read(), BMX055.bmx055_read())				
+				time.sleep(0.5)
+
+				tx2=time.time()
+			else:
+				print("RELEASE TIMEOUT")
+			print("THE ROVER HAS RELEASED")
+			pi.write(22,1)
+			time.sleep(2)
+			IM920.Send("RELEASE")
+
+		# ------------------- Landing Phase ------------------- #
+		Other.saveLog(phaseLog, "4", "Landing Phase Started", time.time() - t_start)
+		if(phaseChk <= 4):
+			print("Landing Judgement Program Start  {0}".format(time.time() - t_start))
+			ty1=time.time()
+			ty2=ty1
+			#loopy
+			gpsdata = GPS.readGPS()
+			bme280data=BME280.bme280_read()
+			while(ty2-ty1<=y):
+				IM920.Send("loopY")
+				#pressjudge=Land.pressjudge()
+				pressjudge=Land.pressdetect()
+			#	gpsjudge=Land.gpsjudge()
+				if pressjudge == 1: #and gpsjudge ==1:
+					break
+				elif pressjudge == 0 :#and gpsjudge==0:
+			#	    print("Descend now taking photo")
+			#	elif pressjudge==1 or gpsjudge==1:
+			#	    print("landjudgementnow")
+				gpssata = GPS.readGPS()
+				bme280data=BME280.bme280_read()
+			#	bmx055data=BMX055.bmx055_read()
+				Other.saveLog(landingLog ,time.time() - t_start, GPS.readGPS(), BME280.bme280_read(), BMX055.bmx055_read())
+				time.sleep(1)
+				Other.saveLog(landingLog ,time.time() - t_start, GPS.readGPS(), BME280.bme280_read(), BMX055.bmx055_read())
+				time.sleep(1)
+				Other.saveLog(landingLog ,time.time() - t_start, GPS.readGPS(), BME280.bme280_read(), BMX055.bmx055_read())
+				time.sleep(1)
+				ty2=time.time()
+			else:
+				print("LAND TIMEOUT")
+			print("THE ROVER HAS LANDED")
+			pi.write(22,1)
+			IM920.Send("LAND")
+			
 		# ------------------- Melting Phase ------------------- #
 		IM920.Send("Melt")
 		Other.saveLog(phaseLog,"5", "Melting Phase Started", time.time() - t_start)
@@ -125,6 +198,20 @@ if __name__ == "__main__":
 			Melting.Melting()
 			Other.saveLog(meltingLog, time.time() - t_start, GPS.readGPS(), "Melting Finished")
 
+		# ------------------- ParaAvoidance Phase ------------------- #	
+		
+		IM920.Send("Progam Finished")
+		close()
+		
+	except KeyboardInterrupt:
+		close()
+		print("Keyboard Interrupt")
+	except Exception as e:
+		IM920.Send("error")
+		close()
+		Other.saveLog("/home/pi/log/errorLog.txt", time.time() - t_start, "Error")
+		print(e.message)
+		
 #--- 引継ぎ ---#
 #--- コピー ---#
 # 2019の37~116をコピー
