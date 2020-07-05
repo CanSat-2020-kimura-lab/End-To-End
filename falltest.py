@@ -1,5 +1,6 @@
 import sys
 ###変更が必要
+'''
 sys.path.append('/home/pi/SensorModuleTest/BME280')
 sys.path.append('/home/pi/SensorModuleTest/TSL2561')
 sys.path.append('/home/pi/2019/SensorModuleTest/GPS')
@@ -12,6 +13,19 @@ sys.path.append('/home/pi/SensorModuleTest/Melting')
 sys.path.append('/home/pi/SensorModuleTest/Motor')
 sys.path.append('/home/pi/Detection/Others')　
 sys.path.append('/home/pi/Detection')　
+'''
+sys.path.append('/home/pi/git/kimuralab/SensorModuleTest/BME280')
+sys.path.append('/home/pi/git/kimuralab/SensorModuleTest/TSL2561')
+sys.path.append('/home/pi/git/kimuralab/SensorModuleTest/GPlabS')
+sys.path.append('/home/pi/git/kimuralab/SensorModuleTest/Camera')
+sys.path.append('/home/pi/git/kimuralabSensorModuleTest/IM920')
+sys.path.append('/home/pi/git/kimuralab/Detection/Release')
+sys.path.append('/home/pi/git/kimuralab/Detection/Land')
+sys.path.append('/home/pi/git/kimuralab/Detection/ParachuteDetection')
+sys.path.append('/home/pi/git/kimuralab/SensorModuleTest/Melting')
+sys.path.append('/home/pi/git/kimuralab/SensorModuleTest/Motor')
+sys.path.append('/home/pi/git/kimuralab/Detection/Others')　
+sys.path.append('/home/pi/git/kimuralab/Detection')　
 
 import time
 import difflib
