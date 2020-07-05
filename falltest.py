@@ -219,6 +219,14 @@ if __name__ == "__main__":
 		IM920.Send("ParaAvo")
 		Other.saveLog(phaseLog, "6", "ParaAvoidance Phase Started", time.time() - t_start)
 		if(phaseChk <= 6):
+			print("ParaAvoidance Phase Started")
+			Other.saveLog(paraAvoidanceLog, time.time() - t_start, GPS.readGPS(), "ParaAvoidance Start")
+			print("START: Judge covered by Parachute")
+			ParaAvoidance.ParaJudge()
+			print("START: Parachute avoidance")
+			paraExsist = ParaAvoidance.ParaAvoidance()
+			Other.saveLog(paraAvoidanceLog, time.time() - t_start, GPS.readGPS(), paraExsist)
+			Other.saveLog(paraAvoidanceLog, time.time() - t_start, GPS.readGPS(), "ParaAvoidance Finished")
 			
 		IM920.Send("Progam Finished")
 		close()
