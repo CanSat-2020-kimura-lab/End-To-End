@@ -4,6 +4,9 @@ sys.path.append('/home/pi/git/kimuralab/SensorModuleTest/GPS')
 sys.path.append('/home/pi/git/kimuralab/SensorModuleTest/TSL2561')
 sys.path.append('/home/pi/git/kimuralab/SensorModuleTest/Melting')
 sys.path.append('/home/pi.git/kimuralab/SensorModuleTest/Wireless')
+sys.path.append('/home/pi/git/kimuralab/Detection/Run_phase')
+sys.path.append('/home/pi/git/kimuralab/IntegratedProgram/Calibration')
+sys.path.append('/home/pi/git/kimuralab/IntegratedProgram/Stuck')
 sys.path.append('/home/pi/git/kimuralab/Other')
 
 import time
@@ -16,7 +19,12 @@ import GPS
 import TSL2561
 import Melting
 import IM920
+import BMX055
 import Other
+import pwm_control
+import Stuck
+import Calibration
+import gps_navigate
 
 phaseChk = 0 #value of phase check
 
@@ -119,3 +127,4 @@ if __name__ == '__main__'
 			while time.time() - t_landing_start <= t_landing:
 				Pressjudge,Presscount = Land.pressdetect()
 				GPSjudge,GAcount = Land.gpsdetect()
+
