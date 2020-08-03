@@ -4,8 +4,10 @@ sys.path.append('/home/pi/git/kimuralab/SensorModuleTest/GPS')
 sys.path.append('/home/pi/git/kimuralab/SensorModuleTest/TSL2561')
 sys.path.append('/home/pi/git/kimuralab/SensorModuleTest/Melting')
 sys.path.append('/home/pi.git/kimuralab/SensorModuleTest/Wireless')
+sys.path.append('/home/pi/git/kimuralab/SensorModuleTest/Camera')
 sys.path.append('/home/pi/git/kimuralab/Detection/Run_phase')
 sys.path.append('/home/pi/git/kimuralab/Detection/ParachuteDetection')
+sys.path.append('/home/pi/git/kimuralab/Detection/GoalDetection')
 sys.path.append('/home/pi/git/kimuralab/IntegratedProgram/Calibration')
 sys.path.append('/home/pi/git/kimuralab/IntegratedProgram/ParaAvoidance')
 sys.path.append('/home/pi/git/kimuralab/IntegratedProgram/Stuck')
@@ -16,6 +18,7 @@ import serial
 import pigpio
 import traceback
 from threading import Thread
+improt math
 
 import BME280
 import GPS
@@ -32,6 +35,7 @@ import ParaAvoidance
 import ParaDetection
 import Capture
 import Land
+improt goaldetection
 
 phaseChk = 0 #value of phase check
 
@@ -41,6 +45,7 @@ t_sleep_start = 0
 t_release_start = 0
 t_landing_start = 0
 t_melting_start = 0
+t_GoalDetection_start = 0
 
 # --- For Sensor Data --- #
 bme280data = [0.0, 0.0, 0.0, 0.0, 0.0]
@@ -55,11 +60,15 @@ luxjudge = 0
 pressjudge = 0
 gpsjudge = 0
 
+# --- For Photo Path --- #
+photo_path = '/home/pi/photo/photo'
+
 # --- For Log path --- #
 phaseLog = '/home/pi/log/phaseLog.txt'
 releaselog = 'home/pi/log/releaseLog.txt'
 landingLog = 'home/pi/log/landingLog.txt'
 meltingLog = 'home/pi/log/meltingLog.txt'
+goalDetectionLog = "/home/pi/log/goalDetectionLog.txt'
 errorLog = 'home/pi/log/errorLog.txt'
 	
 #--- difine goal latitude and longitude ---#
@@ -107,15 +116,15 @@ if __name__ == '__main__':
 		if phaseChk <= 2:
 			IM920.Send('P2S')
 			t_sleep_start = time.time()
-			Other.saveLog(phaseLog, '2', 'Sleep Phase Started', time.time - t_start)
+			Other.saveLog(phaseLog, '2', 'Sleep Phase Started', time.time() - t_start)
 			IM920.Send('P2F')
 		
 		# --- Release Phase --- #
 		if phaseChk <= 3:
 			IM920.Send('P3S')
-			Other.saveLog(phaseLog, '3', 'Release Phase Started', time.time - t_start)
+			Other.saveLog(phaseLog, '3', 'Release Phase Started', time.time() - t_start)
 			t_release_start = time.time()
-			print('Release Phase Started {}'.format(time.time - t_start))
+			print('Release Phase Started {}'.format(time.time() - t_start))
 
 			# --- Release Judgement, 'while' is until timeout --- #
 			while time.time() - t_release_start <= t_release:
@@ -132,25 +141,37 @@ if __name__ == '__main__':
 				Other.saveLog(releaseLog, 'Release Judge by Timeout')
 				print('Release Timeout')
 			IM920.Send('P3F')
+			
 		# --- Landing Phase --- #
 		if phaseChk <= 4:
 			IM920.Send('P4S')
-			Other.saveLog(phaseLog, '4', 'Landing Phase Started', time.time - t_start)
+			Other.saveLog(phaseLog, '4', 'Landing Phase Started', time.time() - t_start)
 			t_landing_start = time.time()
-			print('Landing Phase Started {}'.format(time.time - t_start))
+			print('Landing Phase Started {}'.format(time.time() - t_start))
 
 			# --- Landing Judgement, 'while' is until timeout --- #
 			while time.time() - t_landing_start <= t_landing:
 				Pressjudge,Presscount = Land.Pressdetect()
 				GPSjudge,GAcount = Land.gpsdetect()
+				IM920.Send('P4F')
 
-
-		# --- Parachute Detection Phase --- #
+		# --- Melting Phase --- #
 		if phaseChk <= 5:
 			IM920.Send('P5S')
-			Other.saveLog(phaseLog, '5', 'Parachute Detection Phase Started', time.time - t_start)
+			Other.saveLog(phaseLog, '5', 'Melting Phase Started', time.time() - t_start)
+			Other.saveLog(meltingLog, time.time() - t_start, GPS.readGPS(), "Melting Start")
+			t_melting_start = time.time()
+			print('Melting Phase Started {}'.format(time.time() - t_start))
+			Melting.Melting()
+			Other.saveLog(meltingLog, time.time() - t_start, GPS.readGPS(), "Melting Finished")
+			IM920.Send('P5F')
+
+		# --- Parachute Detection Phase --- #
+		if phaseChk <= 6:
+			IM920.Send('P6S')
+			Other.saveLog(phaseLog, '6', 'Parachute Detection Phase Started', time.time() - t_start)
 			t_ParaDetection_start = time.time()
-			print('Parachute Detection Phase Started {}'.format(time.time - t_start))
+			print('Parachute Detection Phase Started {}'.format(time.time() - t_start))
 
 			#--- note GPS data at land point ---#
 			longitude_land,latitude_land = ParaAvoidance.land_point_save()
@@ -167,13 +188,14 @@ if __name__ == '__main__':
 					break
 				t1 =time.time()
 				time.sleep(1)
+				IM920.Send('P6F')
 
 		# --- Parachute Detection Phase --- #
-		if phaseChk <= 6:
-			IM920.Send('P6S')
-			Other.saveLog(phaseLog, '6', 'Parachute Avoidance Phase Started', time.time - t_start)
+		if phaseChk <= 7:
+			IM920.Send('P7S')
+			Other.saveLog(phaseLog, '7', 'Parachute Avoidance Phase Started', time.time() - t_start)
 			t_ParaAvoidance_start = time.time()
-			print('Parachute Avoidance Phase Started {}'.format(time.time - t_start))
+			print('Parachute Avoidance Phase Started {}'.format(time.time() - t_start))
 
 			while distance <= 5:
 				try:
@@ -192,13 +214,14 @@ if __name__ == '__main__':
 					run.stop()
 					print(traceback.format_exc())
 			print('finish')
+			IM920.Send('P7F')
 
 		# --- Run Phase --- #
-		if phaseChk <= 7:
-			IM920.Send('P7S')
-			Other.saveLog(phaseLog, '7', 'Run Phase Started', time.time - t_start)
+		if phaseChk <= 8:
+			IM920.Send('P8S')
+			Other.saveLog(phaseLog, '8', 'Run Phase Started', time.time() - t_start)
 			t_Run_start = time.time()
-			print('Run Phase Started {}'.format(time.time - t_start))
+			print('Run Phase Started {}'.format(time.time() - t_start))
 
 			direction = Calibration.calculate_direction(lon2,lat2)
 			goal_distance = direction["distance"]
@@ -335,5 +358,67 @@ if __name__ == '__main__':
 				finally:
 					run = pwm_control.Run()
 					run.stop()
+			IM920.Send('P8F')
+
+		# --- Goal Detection Phase --- #
+		if phaseChk <= 9:
+			IM920.Send('P9S')
+			Other.saveLog(phaseLog, '9', 'Goal Detection Phase Started', time.time() - t_start)
+			t_GoalDetection_start = time.time()
+			print('Goal Detection Phase Started {}'.format(time.time() - t_start))
+			try:
+				# --- calculate the distance to the goal --- #
+				direction = Calibration.calculate_direction(lon2,lat2)
+				goal_distance = direction["distance"]
+				# --- if the distance to the goal is within 5 meters --- #
+				while distance <= 5.0:
+					goalflug = 1
+					# --- until the goal decision --- #
+					while goalflug != 0:
+						goalflug, goalarea, goalGAP, photoname = goaldetection.GoalDetection("/home/pi/photo/photo",200 ,20, 80, 7000)
+						print("goalflug", goalflug, "goalarea",goalarea, "goalGAP", goalGAP, "name", photoname)
+						Other.saveLog(goalDetectionLog, time.time() - t_start, GPS.readGPS(), goalflug, goalarea, goalGAP, photoName)
+						# --- if the pixcel error is -30 or less, rotate left --- #
+						if goalGAP <= -30.0:
+							print('Turn left')
+							run = pwm_control.Run()
+							run.turn_left_l()
+							time.sleep(0.5)
+						# --- if the pixcel error is 30 or more, rotate right --- #
+						elif 30 <= goalGAP:
+							print('Turn right')
+							run = pwm_control.Run()
+							run.turn_right_l()
+							time.sleep(0.5)
+						# --- if the pixcel error is greater than -30 and less than 30, go straight --- #
+						else:
+							print('Go straight')
+							run = pwm_control.Run()
+							run.straight_h()
+							time.sleep(1.0)
+			
+					run = pwm_control.Run()
+					run.stop()
+					print('Rover has reached the Goal !')
+					break
+
+			except:
+				run = pwm_control.Run()
+				run.stop()
+				print('\r\t except: Run stop')
+
+			finally:
+				run = pwm_control.Run()
+				run.stop()
+				GPS.colseGPS()
+				print('Competition is Finish !')
+			IM920.Send('P9F')
+
+	except KeyboardInterrupt:
+		close()
+		print('Keyboard Interrupt')
+		IM920.Send('KI')
+
 	except:
-		pass
+		close()
+		
