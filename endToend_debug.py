@@ -18,7 +18,7 @@ import serial
 import pigpio
 import traceback
 from threading import Thread
-improt math
+import math
 
 import BME280
 import GPS
@@ -35,7 +35,7 @@ import ParaAvoidance
 import ParaDetection
 import Capture
 import Land
-improt goaldetection
+import goaldetection
 
 phaseChk = 0 #value of phase check
 
@@ -246,118 +246,86 @@ if __name__ == '__main__':
 				location = Stuck.stuck_detection1()
 				longitude_past = location[0]
 				latitude_past = location[1]
+				#--- initialize count ---#
+				loop_count = 0
+				stuck_count = 0
 
-			#------------- run straight -------------#
-			for i in range(2):
-				try:
-					for i in range(2):
+				#------------- run straight -------------#
+				if loop_count <= 5:
+					print('Go straight')
+					run = pwm_control.Run()
+					run.straight_h()
+					time.sleep(1)
+					#--- calculate  goal direction ---#
+					direction = Calibration.calculate_direction(lon2,lat2)
+					goal_distance = direction["distance"]
+					print('goal distance ='+str(goal_distance))
+					if goal_distance <= 15:
+						break
+					#--- 0 <= azimuth <= 360 ---#
+					azimuth = direction["azimuth1"]
+					#--- calculate θ ---#
+					data = Calibration.get_data()
+					magx = data[0]
+					magy = data[1]
+					#--- 0 <= θ <= 360 ---#
+					θ = Calibration.calculate_angle_2D(magx,magy,magx_off,magy_off)
+
+					#--- if rover go wide left, turn right ---#
+					#--- 15 <= azimuth <= 360 ---#
+					if azimuth - 15 > θ and azimuth - 15 >= 0:
+						print('turn right to adjustment')
 						run = pwm_control.Run()
-						run.straight_h()
-						time.sleep(1)
-						#--- Send GPS data ---#
-						try:
-							while True:
-								value = GPS.readGPS()
-								latitude_new = value[1]
-								longitude_new = value[2]
-								print(value)
-								print('longitude = '+str(longitude_new))
-								print('latitude = '+str(latitude_new))
-								time.sleep(1)
-								if latitude_new != -1.0 and longitude_new != 0.0 :
-									break
-						except KeyboardInterrupt:
-							GPS.closeGPS()
-							print("\r\nKeyboard Intruppted, Serial Closed")
-
-						except:
-							GPS.closeGPS()
-							print (traceback.format_exc())
-						
-						IM920.Send(GPS_data)
-						#--- calculate goal direction ---#
-						direction = Calibration.calculate_direction(lon2,lat2)
-						goal_distance = direction["distance"]
-						if goal_distance <= 5:
-							break
-						#--- 0 <= azimuth <= 360 ---#
-						azimuth = direction["azimuth1"]
-						#--- calculate θ ---#
-						data = Calibration.get_data()
-						magx = data[0]
-						magy = data[1]
-						#--- 0 <= θ <= 360 ---#
-						θ = Calibration.calculate_angle_2D(magx,magy,magx_off,magy_off)
-
-						#--- if rover go wide left, turn right ---#
-						#--- 15 <= azimuth <= 360 ---#
-						if azimuth - 15 > θ and azimuth - 15 >= 0:
+						run.turn_right_l()
+						time.sleep(0.5)
+					#--- 0 <= azimuth < 15 ---#
+					elif azimuth - 15 < 0:
+						azimuth += 360
+						if azimuth - 15 > θ:
+							print('turn right to adjustment')
 							run = pwm_control.Run()
-							run.turn_right()
-							time.sleep(0.5)
-						#--- 0 <= azimuth < 15 ---#
-						elif azimuth - 15 < 0:
-							azimuth += 360
-							if azimuth - 15 > θ:
-								run = pwm_control.Run()
-								run.turn_right()
-								time.sleep(0.5)							
+							run.turn_right_l()
+							time.sleep(0.5)							
 
-						#--- if rover go wide right, turn left ---#
-						#--- 0 <= azimuth <= 345 ---#
-						if θ > azimuth + 15 and  azimuth + 15 > 360:
+					#--- if rover go wide right, turn left ---#
+					#--- 0 <= azimuth <= 345 ---#
+					if θ > azimuth + 15 and  azimuth + 15 > 360:
+						print('turn left to adjustment')
+						run = pwm_control.Run()
+						run.turn_left_l()
+						time.sleep(0.5)
+					#--- 345 < azimuth <= 360 ---#
+					elif azimuth + 15 > 360:
+						azimuth -= 360
+						if θ > azimuth + 15:
+							print('turn left to adjustment')
 							run = pwm_control.Run()
-							run.turn_left()
+							run.turn_left_l()
 							time.sleep(0.5)
-						#--- 345 < azimuth <= 360 ---#
-						elif azimuth + 15 > 360:
-							azimuth -= 360
-							if θ > azimuth + 15:
-								run = pwm_control.Run()
-								run.turn_left()
-								time.sleep(0.5)
-						#--- stuck detection ---#
-						moved_distance = Stuck.stuck_detection2(longitude_past,latitude_past)
-						if moved_distance >= 5:
-							IM920.Send("rover moved!")
-						else:
-							#--- stuck escape ---#
-							Stuck.stuck_escape()
-						
-						#--- Send GPS data ---#
-						try:
-							while True:
-								value = GPS.readGPS()
-								latitude_new = value[1]
-								longitude_new = value[2]
-								print(value)
-								print('longitude = '+str(longitude_new))
-								print('latitude = '+str(latitude_new))
-								time.sleep(1)
-								if latitude_new != -1.0 and longitude_new != 0.0 :
-									break
-						except KeyboardInterrupt:
-							GPS.closeGPS()
-							print("\r\nKeyboard Intruppted, Serial Closed")
-
-						except:
-							GPS.closeGPS()
-							print (traceback.format_exc())
-						
-						IM920.Send(GPS_data)
-						#--- calculate  goal direction ---#
-						direction = Calibration.calculate_direction(lon2,lat2)
-						goal_distance = direction["distance"]
-						if goal_distance <= 5:
+					#--- stuck detection ---#
+					moved_distance = Stuck.stuck_detection2(longitude_past,latitude_past)
+					if moved_distance >= 5:
+						IM920.Send("Rover is moving now")
+						print('Rover is moving now')
+						stuck_count = 0
+					else:
+						#--- stuck escape ---#
+						IM920.Send("Rover stucks now")
+						print('Stuck!')
+						Stuck.stuck_escape()
+						loop_count -= 1
+						stuck_count += 1
+						if stuck_count >= 3:
+							print("Rover can't move any more")
 							break
-					
-				except KeyboardInterrupt:
-					run = pwm_control.Run()
-					run.stop()
-				
-				finally:
-					run = pwm_control.Run()
-					run.stop()
+					#--- calculate  goal direction ---#
+					direction = Calibration.calculate_direction(lon2,lat2)
+					goal_distance = direction["distance"]
+					if goal_distance <= 15:
+						break
+					loop_count += 1
+					print('loop count is '+str(loop_count))
+			
 			IM920.Send('P8F')
 
 		# --- Goal Detection Phase --- #
