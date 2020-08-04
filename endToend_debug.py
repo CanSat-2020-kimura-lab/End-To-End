@@ -47,6 +47,9 @@ t_landing_start = 0
 t_melting_start = 0
 t_GoalDetection_start = 0
 
+# --- For timeout --- #
+t_release = 30
+
 # --- For Sensor Data --- #
 bme280data = [0.0, 0.0, 0.0, 0.0, 0.0]
 GPS_data = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
@@ -131,14 +134,15 @@ if __name__ == '__main__':
 				luxjudge,luxcount = Release.luxdetect()
 				pressjudge,presscount = Release.pressdetect()
 				if luxjudge == 1 or pressjudge == 1:
-					Other.saveLog(releaseLog, 'Release Judge', luxjudge, pressjudge)
+					Other.saveLog(releaseLog, 'Release Judge', time.time(), TSL2561.reaadLux(), BME280.bme_read(), luxjudge, pressjudge)
 					print('Rover has released')
 					break
 				else:
 					print('Rover is still in the air')
+					Other.saveLog(releaseLog, 'Rrelease Judge', time.time(), TSL2561.reaadLux(), Release.luxdetect(), BME280.bme_read(), Release.pressdetect())
 					IM920.Send('P3D')
-			else:
-				Other.saveLog(releaseLog, 'Release Judge by Timeout')
+			if t_release < time.time() - t_release_start:
+				Other.saveLog(releaseLog, 'Release Judge by Timeout', time.time() - t_start)
 				print('Release Timeout')
 			IM920.Send('P3F')
 			
@@ -153,7 +157,18 @@ if __name__ == '__main__':
 			while time.time() - t_landing_start <= t_landing:
 				Pressjudge,Presscount = Land.Pressdetect()
 				GPSjudge,GAcount = Land.gpsdetect()
-				IM920.Send('P4F')
+				if Pressjudge == 1 and GPSjudge == 1:
+					Other.saveLog(landingLog, 'Landing Judge', time.time(), BME280.bme_read(), Presjudge, GPS.readGPS(), GPSjudge)
+					print('Rover has Landed')
+					break
+				else:
+					print('Rover is still in the air')
+					Other.saveLog(landingLog, 'Landing Judge', time.time(), BME280.bme_read(), Land.Pressdetect(), GPS.readGPS(), Land.gpsdetect())
+					IM920.Send('P4D')
+			if t_landing < time.time() - t_release_start:
+				Other.saveLog(landingLog, 'Landing Judge by Timeout', time.time() - t_start)
+				print('Landing Timeout')
+			IM920.Send('P4F')
 
 		# --- Melting Phase --- #
 		if phaseChk <= 5:
