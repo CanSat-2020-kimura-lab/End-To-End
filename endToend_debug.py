@@ -5,6 +5,8 @@ sys.path.append('/home/pi/git/kimuralab/SensorModuleTest/TSL2561')
 sys.path.append('/home/pi/git/kimuralab/SensorModuleTest/Melting')
 sys.path.append('/home/pi.git/kimuralab/SensorModuleTest/Wireless')
 sys.path.append('/home/pi/git/kimuralab/SensorModuleTest/Camera')
+sys.path.append('/home/pi/git/kimuralab/Detection/Landing_phase ')
+sys.path.append('/home/pi/git/kimuralab/Detection/Release_phase ')
 sys.path.append('/home/pi/git/kimuralab/Detection/Run_phase')
 sys.path.append('/home/pi/git/kimuralab/Detection/ParachuteDetection')
 sys.path.append('/home/pi/git/kimuralab/Detection/GoalDetection')
@@ -19,6 +21,7 @@ import pigpio
 import traceback
 from threading import Thread
 import math
+import cv2
 
 import BME280
 import GPS
@@ -35,9 +38,11 @@ import ParaAvoidance
 import ParaDetection
 import Capture
 import Land
+import Release
 import goaldetection
 
 phaseChk = 0 #value of phase check
+RX = 18
 
 # --- For time setting --- #
 t_start = 0
@@ -63,16 +68,19 @@ GAcount = 0
 luxjudge = 0
 pressjudge = 0
 gpsjudge = 0
+anylux = 0
+anypress = 0.3
+anyalt = 0.1
 
 # --- For Photo Path --- #
 photo_path = '/home/pi/photo/photo'
 
 # --- For Log path --- #
 phaseLog = '/home/pi/log/phaseLog.txt'
-releaselog = 'home/pi/log/releaseLog.txt'
+releaseLog = 'home/pi/log/releaseLog.txt'
 landingLog = 'home/pi/log/landingLog.txt'
 meltingLog = 'home/pi/log/meltingLog.txt'
-goalDetectionLog = "/home/pi/log/goalDetectionLog.txt'
+goalDetectionLog = '/home/pi/log/goalDetectionLog.txt'
 errorLog = 'home/pi/log/errorLog.txt'
 	
 #--- difine goal latitude and longitude ---#
@@ -85,8 +93,8 @@ def setup():
 	global phaseChk
 	pi.write(22,1)
 	pi.write(24,1)
-	BME280.bme2280_setup()
-	BME280.calib_param()
+	BME280.bme280_setup()
+	BME280.bme280_calib_param()
 	TSL2561.tsl2561_setup()
 	GPS.openGPS()
 
@@ -113,7 +121,7 @@ if __name__ == '__main__':
 		print('Start {0}'.format(phaseChk))
 		if phaseChk <= 1:
 			IM920.Send('P1S')
-			Other.saveLog(phaseLog, '1', 'Program Started', time.time() - t_atart)
+			Other.saveLog(phaseLog, '1', 'Program Started', time.time() - t_start)
 			IM920.Send('P1F')
 
 		# --- Sleep Phase --- #
@@ -132,15 +140,15 @@ if __name__ == '__main__':
 
 			# --- Release Judgement, 'while' is until timeout --- #
 			while time.time() - t_release_start <= t_release:
-				luxjudge,luxcount = Release.luxdetect()
-				pressjudge,presscount = Release.pressdetect()
+				luxjudge,luxcount = Release.luxdetect(anylux)
+				pressjudge,presscount = Release.pressdetect(anypress)
 				if luxjudge == 1 or pressjudge == 1:
-					Other.saveLog(releaseLog, 'Release Judge', time.time(), TSL2561.reaadLux(), BME280.bme_read(), luxjudge, pressjudge)
+					Other.saveLog(releaseLog, 'Release Judge', time.time(), TSL2561.readLux(), BME280.bme280_read(), luxjudge, pressjudge)
 					print('Rover has released')
 					break
 				else:
 					print('Rover is still in the air')
-					Other.saveLog(releaseLog, 'Rrelease Judge', time.time(), TSL2561.reaadLux(), Release.luxdetect(), BME280.bme_read(), Release.pressdetect())
+					Other.saveLog(releaseLog, 'Release Judge', time.time(), TSL2561.readLux(), Release.luxdetect(anylux), BME280.bme280_read(), Release.pressdetect(anypress))
 					IM920.Send('P3D')
 			if t_release < time.time() - t_release_start:
 				Other.saveLog(releaseLog, 'Release Judge by Timeout', time.time() - t_start)
@@ -156,15 +164,15 @@ if __name__ == '__main__':
 
 			# --- Landing Judgement, 'while' is until timeout --- #
 			while time.time() - t_landing_start <= t_landing:
-				Pressjudge,Presscount = Land.Pressdetect()
-				GPSjudge,GAcount = Land.gpsdetect()
+				Pressjudge,Presscount = Land.Pressdetect(anypress)
+				GPSjudge,GAcount = Land.gpsdetect(anyalt)
 				if Pressjudge == 1 and GPSjudge == 1:
-					Other.saveLog(landingLog, 'Landing Judge', time.time(), BME280.bme_read(), Presjudge, GPS.readGPS(), GPSjudge)
+					Other.saveLog(landingLog, 'Landing Judge', time.time(), BME280.bme280_read(), Pressjudge, GPS.readGPS(), GPSjudge)
 					print('Rover has Landed')
 					break
 				else:
 					print('Rover is still in the air')
-					Other.saveLog(landingLog, 'Landing Judge', time.time(), BME280.bme_read(), Land.Pressdetect(), GPS.readGPS(), Land.gpsdetect())
+					Other.saveLog(landingLog, 'Landing Judge', time.time(), BME280.bme280_read(), Land.Pressdetect(anypress), GPS.readGPS(), Land.gpsdetect(anyalt))
 					IM920.Send('P4D')
 			if t_landing < time.time() - t_release_start:
 				Other.saveLog(landingLog, 'Landing Judge by Timeout', time.time() - t_start)
@@ -183,10 +191,10 @@ if __name__ == '__main__':
 			IM920.Send('P5F')
 		
 		# --- Mission Phase --- #
-		Camera.Capture("/home/git/photo/mission", 320, 240)
-		img = cv2.imread("/home/pi/picamera/mission.jpg")
+		Capture.Capture("/home/git/photo/mission", 320, 240)
+		img = cv2.imread("/home/git/photo/mission.jpg")
 		dst = cv2.resize(img, (img.shape[1]*2, img.shape[0]*2), interpolation=cv2.INTER_NEAREST)
-		Camera.Capture("/home/git/photo/mission", 640, 480)
+		Capture.Capture("/home/git/photo/mission", 640, 480)
 
 		# --- Parachute Detection Phase --- #
 		if phaseChk <= 6:
@@ -403,7 +411,7 @@ if __name__ == '__main__':
 			finally:
 				run = pwm_control.Run()
 				run.stop()
-				GPS.colseGPS()
+				GPS.closeGPS()
 				print('Competition is Finish !')
 			IM920.Send('P9F')
 
@@ -414,4 +422,3 @@ if __name__ == '__main__':
 
 	except:
 		close()
-		
