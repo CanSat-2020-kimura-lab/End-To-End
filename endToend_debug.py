@@ -180,6 +180,12 @@ if __name__ == '__main__':
 			Melting.Melting()
 			Other.saveLog(meltingLog, time.time() - t_start, GPS.readGPS(), "Melting Finished")
 			IM920.Send('P5F')
+		
+		# --- Mission Phase --- #
+		Camera.Capture("/home/git/photo/mission", 320, 240)
+		img = cv2.imread("/home/pi/picamera/mission.jpg")
+		dst = cv2.resize(img, (img.shape[1]*2, img.shape[0]*2), interpolation=cv2.INTER_NEAREST)
+		Camera.Capture("/home/git/photo/mission", 640, 480)
 
 		# --- Parachute Detection Phase --- #
 		if phaseChk <= 6:
