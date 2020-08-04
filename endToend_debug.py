@@ -49,6 +49,7 @@ t_GoalDetection_start = 0
 
 # --- For timeout --- #
 t_release = 30
+t_landing = 60
 
 # --- For Sensor Data --- #
 bme280data = [0.0, 0.0, 0.0, 0.0, 0.0]
