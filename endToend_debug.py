@@ -378,7 +378,7 @@ if __name__ == '__main__':
 					while goalflug != 0:
 						goalflug, goalarea, goalGAP, photoname = goaldetection.GoalDetection("/home/pi/photo/photo",200 ,20, 80, 7000)
 						print("goalflug", goalflug, "goalarea",goalarea, "goalGAP", goalGAP, "name", photoname)
-						Other.saveLog(goalDetectionLog, time.time() - t_start, GPS.readGPS(), goalflug, goalarea, goalGAP, photoName)
+						Other.saveLog(goalDetectionLog, time.time() - t_start, GPS.readGPS(), goalflug, goalarea, goalGAP, photoname)
 						# --- if the pixcel error is -30 or less, rotate left --- #
 						if goalGAP <= -30.0:
 							print('Turn left')
