@@ -79,11 +79,11 @@ photo_path = '/home/pi/photo/photo'
 
 # --- For Log path --- #
 phaseLog = '/home/pi/log/phaseLog.txt'
-releaseLog = 'home/pi/log/releaseLog.txt'
-landingLog = 'home/pi/log/landingLog.txt'
-meltingLog = 'home/pi/log/meltingLog.txt'
+releaseLog = '/home/pi/log/releaseLog.txt'
+landingLog = '/home/pi/log/landingLog.txt'
+meltingLog = '/home/pi/log/meltingLog.txt'
 goalDetectionLog = '/home/pi/log/goalDetectionLog.txt'
-errorLog = 'home/pi/log/errorLog.txt'
+errorLog = '/home/pi/log/errorLog.txt'
 	
 #--- difine goal latitude and longitude ---#
 lon2 = 139.5430
