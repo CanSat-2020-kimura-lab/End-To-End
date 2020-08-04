@@ -251,7 +251,7 @@ if __name__ == '__main__':
 				stuck_count = 0
 
 				#------------- run straight -------------#
-				if loop_count <= 5:
+				while loop_count <= 5:
 					print('Go straight')
 					run = pwm_control.Run()
 					run.straight_h()
@@ -304,10 +304,13 @@ if __name__ == '__main__':
 							time.sleep(0.5)
 					#--- stuck detection ---#
 					moved_distance = Stuck.stuck_detection2(longitude_past,latitude_past)
-					if moved_distance >= 5:
+					if moved_distance >= 15:
 						IM920.Send("Rover is moving now")
 						print('Rover is moving now')
 						stuck_count = 0
+						location = Stuck.stuck_detection1()
+						longitude_past = location[0]
+						latitude_past = location[1]     
 					else:
 						#--- stuck escape ---#
 						IM920.Send("Rover stucks now")
