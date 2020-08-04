@@ -194,10 +194,10 @@ if __name__ == '__main__':
 			IM920.Send('P5F')
 		
 		# --- Mission Phase --- #
-		Capture.Capture("/home/git/photo/mission", 320, 240)
-		img = cv2.imread("/home/git/photo/mission.jpg")
+		Capture.Capture("/home/pi/photo/mission", 320, 240)
+		img = cv2.imread("/home/pi/photo/mission.jpg")
 		dst = cv2.resize(img, (img.shape[1]*2, img.shape[0]*2), interpolation=cv2.INTER_NEAREST)
-		Capture.Capture("/home/git/photo/mission", 640, 480)
+		Capture.Capture("/home/pi/photo/mission", 640, 480)
 
 		# --- Parachute Detection Phase --- #
 		if phaseChk <= 6:
