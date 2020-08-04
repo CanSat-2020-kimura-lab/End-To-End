@@ -1,9 +1,10 @@
 import sys
 sys.path.append('/home/pi/git/kimuralab/SensorModuleTest/BME280')
+sys.path.append('/home/pi/git/kimuralab/SensorModuleTest/BMX055')
 sys.path.append('/home/pi/git/kimuralab/SensorModuleTest/GPS')
 sys.path.append('/home/pi/git/kimuralab/SensorModuleTest/TSL2561')
 sys.path.append('/home/pi/git/kimuralab/SensorModuleTest/Melting')
-sys.path.append('/home/pi.git/kimuralab/SensorModuleTest/Wireless')
+sys.path.append('/home/pi/git/kimuralab/SensorModuleTest/Wireless')
 sys.path.append('/home/pi/git/kimuralab/SensorModuleTest/Camera')
 sys.path.append('/home/pi/git/kimuralab/Detection/Landing_phase ')
 sys.path.append('/home/pi/git/kimuralab/Detection/Release_phase ')
@@ -24,6 +25,7 @@ import math
 import cv2
 
 import BME280
+import BMX055
 import GPS
 import TSL2561
 import Melting
@@ -95,6 +97,7 @@ def setup():
 	pi.write(24,1)
 	BME280.bme280_setup()
 	BME280.bme280_calib_param()
+	BMX055.bmx055_setup()
 	TSL2561.tsl2561_setup()
 	GPS.openGPS()
 
