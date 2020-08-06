@@ -179,10 +179,10 @@ if __name__ == '__main__':
 
 			# --- Landing Judgement, 'while' is until timeout --- #
 			while time.time() - t_landing_start <= t_landing:
-				Presscount,Presslandjudge = Land.Pressdetect(anypress)
-				GAcount,GPSlandjudge = Land.gpsdetect(anyalt)
+				Presscount,Pressjudge = Land.Pressdetect(anypress)
+				GAcount,GPSjudge = Land.gpsdetect(anyalt)
 				if Pressjudge == 1 and GPSjudge == 1:
-					Other.saveLog(landingLog, 'Landing Judge', time.time() - t_start, BME280.bme280_read(), Presslandjudge, GPS.readGPS(), GPSlandjudge)
+					Other.saveLog(landingLog, 'Landing Judge', time.time() - t_start, BME280.bme280_read(), Pressjudge, GPS.readGPS(), GPSjudge)
 					print('Rover has Landed')
 					break
 				else:
@@ -193,8 +193,9 @@ if __name__ == '__main__':
 				Other.saveLog(landingLog, 'Landing Judge by Timeout', time.time() - t_start)
 				print('Landing Timeout')
 			IM920.Send('P4F')
-			phaseChk += 2
+			phaseChk += 1
 			print('phaseChk = '+str(phaseChk))
+
 		'''
 		# --- Melting Phase --- #
 		if phaseChk == 5:
