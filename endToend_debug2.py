@@ -222,8 +222,8 @@ if __name__ == '__main__':
 			#--- note GPS data at land point ---#
 			longitude_land,latitude_land = ParaAvoidance.land_point_save()
 			#--- initialize distance ---#
-			global distance
-			distance = 0
+			global land_point_distance
+			land_point_distance = 0
 			t2 = time.time()
 			t1 = t2
 			#--- Parachute judge ---#
@@ -238,166 +238,171 @@ if __name__ == '__main__':
 			phaseChk += 1
 			print('phaseChk = '+str(phaseChk))
 
-		# --- Parachute Avoidance Phase --- #
-		if phaseChk == 7:
-			IM920.Send('P7S')
-			Other.saveLog(phaseLog, '7', 'Parachute Avoidance Phase Started', time.time() - t_start)
-			t_ParaAvoidance_start = time.time()
-			print('Parachute Avoidance Phase Started {}'.format(time.time() - t_start))
+		while True:
+			# --- Parachute Avoidance Phase --- #
+			if phaseChk == 7:
+				IM920.Send('P7S')
+				Other.saveLog(phaseLog, '7', 'Parachute Avoidance Phase Started', time.time() - t_start)
+				t_ParaAvoidance_start = time.time()
+				print('Parachute Avoidance Phase Started {}'.format(time.time() - t_start))
 
-			while distance <= 5:
-				try:
-					#--- first parachute detection ---#
-					flug, area, photoname = ParaDetection.ParaDetection("/home/pi/photo/photo",320,240,200,10,120)
-					ParaAvoidance.Parachute_Avoidance(flug)
-					distance = ParaAvoidance.Parachute_area_judge(longitude_land,latitude_land)
+				while land_point_distance <= 5:
+					try:
+						#--- first parachute detection ---#
+						flug, area, photoname = ParaDetection.ParaDetection("/home/pi/photo/photo",320,240,200,10,120)
+						ParaAvoidance.Parachute_Avoidance(flug)
+						land_point_distance = ParaAvoidance.Parachute_area_judge(longitude_land,latitude_land)
 
-				except KeyboardInterrupt:
-					print("Emergency!")
-					run = pwm_control.Run()
-					run.stop()
-
-				except:
-					run = pwm_control.Run()
-					run.stop()
-					print(traceback.format_exc())
-			print('finish')
-			IM920.Send('P7F')
-			phaseChk += 1
-			print('phaseChk = '+str(phaseChk))
-
-		# --- Run Phase --- #
-		if phaseChk == 8:
-			IM920.Send('P8S')
-			Other.saveLog(phaseLog, '8', 'Run Phase Started', time.time() - t_start)
-			t_Run_start = time.time()
-			print('Run Phase Started {}'.format(time.time() - t_start))
-
-			direction = Calibration2.calculate_direction(lon2,lat2)
-			goal_distance = direction["distance"]
-			# ------------- GPS navigate ------------- #
-			while goal_distance >= 5:
-				#------------- Calibration -------------#
-				while True:
-					print('Calibration Start')
-					#--- calculate offset ---#
-					magdata = Calibration2.magdata_matrix()
-					magdata_offset = Calibration2.calculate_offset(magdata)
-					magx_off = magdata_offset[3]
-					magy_off = magdata_offset[4]
-					magz_off = magdata_offset[5]
-					time.sleep(1)
-					#--- calculate θ ---#
-					data = Calibration2.get_data()
-					magx = data[0]
-					magy = data[1]
-					#--- 0 <= θ <= 360 ---#
-					θ = Calibration2.calculate_angle_2D(magx,magy,magx_off,magy_off)
-					#------------- rotate contorol -------------#
-					judge = Calibration2.rotate_control(θ,lon2,lat2)
-					if judge == False:
-						try:
-							run = pwm_control.Run()
-							run.straight_h()
-							time.sleep(1)
-						finally:
-							run = pwm_control.Run()
-							run.stop()
-							time.sleep(1)					
-					else:
+					except KeyboardInterrupt:
+						print("Emergency!")
 						run = pwm_control.Run()
 						run.stop()
-						time.sleep(1)
-						break
-				location = Stuck.stuck_detection1()
-				longitude_past = location[0]
-				latitude_past = location[1]
-				#--- initialize count ---#
-				loop_count = 0
-				stuck_count = 0
 
-				#------------- run straight -------------#
-				while loop_count <= 5:
-					print('Go straight')
-					run = pwm_control.Run()
-					run.straight_h()
-					time.sleep(1)
-					#--- calculate  goal direction ---#
-					direction = Calibration2.calculate_direction(lon2,lat2)
-					goal_distance = direction["distance"]
-					print('goal distance ='+str(goal_distance))
-					if goal_distance <= 15:
-						break
-					#--- 0 <= azimuth <= 360 ---#
-					azimuth = direction["azimuth1"]
-					#--- calculate θ ---#
-					data = Calibration2.get_data()
-					magx = data[0]
-					magy = data[1]
-					#--- 0 <= θ <= 360 ---#
-					θ = Calibration2.calculate_angle_2D(magx,magy,magx_off,magy_off)
-
-					#--- if rover go wide left, turn right ---#
-					#--- 15 <= azimuth <= 360 ---#
-					if azimuth - 15 > θ and azimuth - 15 >= 0:
-						print('turn right to adjustment')
+					except:
 						run = pwm_control.Run()
-						run.turn_right_l()
-						time.sleep(0.5)
-					#--- 0 <= azimuth < 15 ---#
-					elif azimuth - 15 < 0:
-						azimuth += 360
-						if azimuth - 15 > θ:
+						run.stop()
+						print(traceback.format_exc())
+				print('finish')
+				IM920.Send('P7F')
+				phaseChk += 1
+				print('phaseChk = '+str(phaseChk))
+
+			# --- Run Phase --- #
+			if phaseChk == 8:
+				IM920.Send('P8S')
+				Other.saveLog(phaseLog, '8', 'Run Phase Started', time.time() - t_start)
+				t_Run_start = time.time()
+				print('Run Phase Started {}'.format(time.time() - t_start))
+
+				direction = Calibration2.calculate_direction(lon2,lat2)
+				goal_distance = direction["distance"]
+				# ------------- GPS navigate ------------- #
+				while goal_distance >= 5 and land_point_distance >= 5:
+					#------------- Calibration -------------#
+					while True:
+						print('Calibration Start')
+						#--- calculate offset ---#
+						magdata = Calibration2.magdata_matrix()
+						magdata_offset = Calibration2.calculate_offset(magdata)
+						magx_off = magdata_offset[3]
+						magy_off = magdata_offset[4]
+						magz_off = magdata_offset[5]
+						time.sleep(1)
+						#--- calculate θ ---#
+						data = Calibration2.get_data()
+						magx = data[0]
+						magy = data[1]
+						#--- 0 <= θ <= 360 ---#
+						θ = Calibration2.calculate_angle_2D(magx,magy,magx_off,magy_off)
+						#------------- rotate contorol -------------#
+						judge = Calibration2.rotate_control(θ,lon2,lat2)
+						if judge == False:
+							try:
+								run = pwm_control.Run()
+								run.straight_h()
+								time.sleep(1)
+							finally:
+								run = pwm_control.Run()
+								run.stop()
+								time.sleep(1)					
+						else:
+							run = pwm_control.Run()
+							run.stop()
+							time.sleep(1)
+							break
+					location = Stuck.stuck_detection1()
+					longitude_past = location[0]
+					latitude_past = location[1]
+					#--- initialize count ---#
+					loop_count = 0
+					stuck_count = 0
+
+					#------------- run straight -------------#
+					while loop_count <= 5:
+						print('Go straight')
+						run = pwm_control.Run()
+						run.straight_h()
+						time.sleep(1)
+						#--- calculate  goal direction ---#
+						direction = Calibration2.calculate_direction(lon2,lat2)
+						land_point_distance = ParaAvoidance.Parachute_area_judge(longitude_land,latitude_land)
+						if land_point_distance <= 5:
+							break
+						goal_distance = direction["distance"]
+						print('goal distance ='+str(goal_distance))
+						if goal_distance <= 15:
+							phaseChk -= 1
+							break
+						#--- 0 <= azimuth <= 360 ---#
+						azimuth = direction["azimuth1"]
+						#--- calculate θ ---#
+						data = Calibration2.get_data()
+						magx = data[0]
+						magy = data[1]
+						#--- 0 <= θ <= 360 ---#
+						θ = Calibration2.calculate_angle_2D(magx,magy,magx_off,magy_off)
+
+						#--- if rover go wide left, turn right ---#
+						#--- 15 <= azimuth <= 360 ---#
+						if azimuth - 15 > θ and azimuth - 15 >= 0:
 							print('turn right to adjustment')
 							run = pwm_control.Run()
 							run.turn_right_l()
-							time.sleep(0.5)							
+							time.sleep(0.5)
+						#--- 0 <= azimuth < 15 ---#
+						elif azimuth - 15 < 0:
+							azimuth += 360
+							if azimuth - 15 > θ:
+								print('turn right to adjustment')
+								run = pwm_control.Run()
+								run.turn_right_l()
+								time.sleep(0.5)							
 
-					#--- if rover go wide right, turn left ---#
-					#--- 0 <= azimuth <= 345 ---#
-					if θ > azimuth + 15 and  azimuth + 15 > 360:
-						print('turn left to adjustment')
-						run = pwm_control.Run()
-						run.turn_left_l()
-						time.sleep(0.5)
-					#--- 345 < azimuth <= 360 ---#
-					elif azimuth + 15 > 360:
-						azimuth -= 360
-						if θ > azimuth + 15:
+						#--- if rover go wide right, turn left ---#
+						#--- 0 <= azimuth <= 345 ---#
+						if θ > azimuth + 15 and  azimuth + 15 > 360:
 							print('turn left to adjustment')
 							run = pwm_control.Run()
 							run.turn_left_l()
 							time.sleep(0.5)
-					#--- stuck detection ---#
-					moved_distance = Stuck.stuck_detection2(longitude_past,latitude_past)
-					if moved_distance >= 15:
-						IM920.Send("Rover is moving now")
-						print('Rover is moving now')
-						stuck_count = 0
-						location = Stuck.stuck_detection1()
-						longitude_past = location[0]
-						latitude_past = location[1]     
-					else:
-						#--- stuck escape ---#
-						IM920.Send("Rover stucks now")
-						print('Stuck!')
-						Stuck.stuck_escape()
-						loop_count -= 1
-						stuck_count += 1
-						if stuck_count >= 3:
-							print("Rover can't move any more")
+						#--- 345 < azimuth <= 360 ---#
+						elif azimuth + 15 > 360:
+							azimuth -= 360
+							if θ > azimuth + 15:
+								print('turn left to adjustment')
+								run = pwm_control.Run()
+								run.turn_left_l()
+								time.sleep(0.5)
+						#--- stuck detection ---#
+						moved_distance = Stuck.stuck_detection2(longitude_past,latitude_past)
+						if moved_distance >= 15:
+							IM920.Send("Rover is moving now")
+							print('Rover is moving now')
+							stuck_count = 0
+							location = Stuck.stuck_detection1()
+							longitude_past = location[0]
+							latitude_past = location[1]     
+						else:
+							#--- stuck escape ---#
+							IM920.Send("Rover stucks now")
+							print('Stuck!')
+							Stuck.stuck_escape()
+							loop_count -= 1
+							stuck_count += 1
+							if stuck_count >= 3:
+								print("Rover can't move any more")
+								break
+						#--- calculate  goal direction ---#
+						direction = Calibration2.calculate_direction(lon2,lat2)
+						goal_distance = direction["distance"]
+						if goal_distance <= 15:
 							break
-					#--- calculate  goal direction ---#
-					direction = Calibration2.calculate_direction(lon2,lat2)
-					goal_distance = direction["distance"]
-					if goal_distance <= 15:
-						break
-					loop_count += 1
-					print('loop count is '+str(loop_count))
-			
-			IM920.Send('P8F')
-			phaseChk += 1
-			print('phaseChk = '+str(phaseChk))
+						loop_count += 1
+						print('loop count is '+str(loop_count))
+				
+				IM920.Send('P8F')
+				phaseChk += 1
+				print('phaseChk = '+str(phaseChk))
 
 		# --- Goal Detection Phase --- #
 		if phaseChk == 9:
@@ -410,7 +415,7 @@ if __name__ == '__main__':
 				direction = Calibration2.calculate_direction(lon2,lat2)
 				goal_distance = direction["distance"]
 				# --- if the distance to the goal is within 5 meters --- #
-				while distance <= 5.0:
+				while goal_distance <= 5.0:
 					goalflug = 1
 					# --- until the goal decision --- #
 					while goalflug != 0:
