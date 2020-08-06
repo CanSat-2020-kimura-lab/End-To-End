@@ -94,7 +94,7 @@ pi = pigpio.pi()
 def setup():
 	global phaseChk
 	pi.write(22,1)
-	pi.write(24,1)
+	pi.write(24,0)
 	BME280.bme280_setup()
 	BME280.bme280_calib_param()
 	BMX055.bmx055_setup()
