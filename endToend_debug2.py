@@ -82,6 +82,9 @@ phaseLog = '/home/pi/log/phaseLog.txt'
 releaseLog = '/home/pi/log/releaseLog.txt'
 landingLog = '/home/pi/log/landingLog.txt'
 meltingLog = '/home/pi/log/meltingLog.txt'
+ParaDetectionLog = '/home/pi/log/ParaDetectionLog.txt'
+ParaAvoidanceLog = '/home/pi/log/ParaAvoidanceLog.txt'
+Run_GPSLog = '/home/pi/log/Run_GPSLog.txt'
 goalDetectionLog = '/home/pi/log/goalDetectionLog.txt'
 errorLog = '/home/pi/log/errorLog.txt'
 	
@@ -228,6 +231,7 @@ if __name__ == '__main__':
 			#--- timeout is 60s ---#
 			while t2 - t1 < 60:
 				Luxflug = ParaDetection.ParaJudge(100)
+				Other.saveLog(ParaDetectionLog, 'ParaDetection', time.time() - t_start, BME280.bme280_read(), Luxflug)				
 				if Luxflug[0] == 1:
 					break
 				t1 =time.time()
@@ -248,6 +252,7 @@ if __name__ == '__main__':
 					try:
 						#--- first parachute detection ---#
 						flug, area, photoname = ParaDetection.ParaDetection("/home/pi/photo/photo",320,240,200,10,120)
+						Other.saveLog(ParaAvoidanceLog, 'ParaAvoidance', time.time() - t_start, flug, area, photoname, GPS.readGPS())
 						ParaAvoidance.Parachute_Avoidance(flug)
 						land_point_distance = ParaAvoidance.Parachute_area_judge(longitude_land,latitude_land)
 
@@ -324,12 +329,13 @@ if __name__ == '__main__':
 						#--- calculate  goal direction ---#
 						direction = Calibration2.calculate_direction(lon2,lat2)
 						land_point_distance = ParaAvoidance.Parachute_area_judge(longitude_land,latitude_land)
+						Other.saveLog(Run_GPSLog, 'Run_GPS', time.time() - t_start, goal_distance, land_point_distance, GPS.readGPS())
 						if land_point_distance <= 5:
+							phaseChk -= 1							
 							break
 						goal_distance = direction["distance"]
 						print('goal distance ='+str(goal_distance))
 						if goal_distance <= 15:
-							phaseChk -= 1
 							break
 						#--- 0 <= azimuth <= 360 ---#
 						azimuth = direction["azimuth1"]
@@ -392,7 +398,13 @@ if __name__ == '__main__':
 								break
 						#--- calculate  goal direction ---#
 						direction = Calibration2.calculate_direction(lon2,lat2)
+						land_point_distance = ParaAvoidance.Parachute_area_judge(longitude_land,latitude_land)
+						Other.saveLog(Run_GPSLog, 'Run_GPS', time.time() - t_start, goal_distance, land_point_distance, GPS.readGPS())
+						if land_point_distance <= 5:
+							phaseChk -= 1							
+							break
 						goal_distance = direction["distance"]
+						print('goal distance ='+str(goal_distance))
 						if goal_distance <= 15:
 							break
 						loop_count += 1
