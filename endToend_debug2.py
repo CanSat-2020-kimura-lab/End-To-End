@@ -34,7 +34,7 @@ import BMX055
 import Other
 import pwm_control
 import Stuck
-import Calibration2
+import Calibration
 import gps_navigate
 import ParaAvoidance
 import ParaDetection
@@ -85,6 +85,7 @@ landingLog = '/home/pi/log/landingLog.txt'
 meltingLog = '/home/pi/log/meltingLog.txt'
 ParaDetectionLog = '/home/pi/log/ParaDetectionLog.txt'
 ParaAvoidanceLog = '/home/pi/log/ParaAvoidanceLog.txt'
+CalibrationLog = '/home/pi/log/CalibrationLog.txt'
 Run_GPSLog = '/home/pi/log/Run_GPSLog.txt'
 goalDetectionLog = '/home/pi/log/goalDetectionLog.txt'
 errorLog = '/home/pi/log/errorLog.txt'
@@ -254,7 +255,7 @@ if __name__ == '__main__':
 						#--- first parachute detection ---#
 						flug, area, photoname = ParaDetection.ParaDetection("/home/pi/photo/photo",320,240,200,10,120)
 						Other.saveLog(ParaAvoidanceLog, 'ParaAvoidance', time.time() - t_start, flug, area, photoname, GPS.readGPS())
-						ParaAvoidance.Parachute_Avoidance(flug)
+						ParaAvoidance.Parachute_Avoidance(flug,t_start)
 						land_point_distance = ParaAvoidance.Parachute_area_judge(longitude_land,latitude_land)
 
 					except KeyboardInterrupt:
@@ -291,6 +292,7 @@ if __name__ == '__main__':
 						magx_off = magdata_offset[3]
 						magy_off = magdata_offset[4]
 						magz_off = magdata_offset[5]
+						Other.saveLog(CalibrationLog, 'Calibration', time.time() - t_start, magdata, magx_off, magy_off, magz_off)
 						time.sleep(1)
 						#--- calculate θ ---#
 						data = Calibration2.get_data()
