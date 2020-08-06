@@ -151,12 +151,12 @@ if __name__ == '__main__':
 				luxjudge,luxcount = Release.luxdetect(anylux)
 				pressjudge,presscount = Release.pressdetect(anypress)
 				if luxjudge == 1 or pressjudge == 1:
-					Other.saveLog(releaseLog, 'Release Judge', time.time(), TSL2561.readLux(), BME280.bme280_read(), luxjudge, pressjudge)
+					Other.saveLog(releaseLog, 'Release Judge', time.time() - t_start, TSL2561.readLux(), BME280.bme280_read(), luxjudge, pressjudge)
 					print('Rover has released')
 					break
 				else:
 					print('Rover is still in the air')
-					Other.saveLog(releaseLog, 'Release Judge', time.time(), TSL2561.readLux(), Release.luxdetect(anylux), BME280.bme280_read(), Release.pressdetect(anypress))
+					Other.saveLog(releaseLog, 'Release Judge', time.time() - t_start, TSL2561.readLux(), Release.luxdetect(anylux), BME280.bme280_read(), Release.pressdetect(anypress))
 					IM920.Send('P3D')
 			if t_release < time.time() - t_release_start:
 				Other.saveLog(releaseLog, 'Release Judge by Timeout', time.time() - t_start)
@@ -177,12 +177,12 @@ if __name__ == '__main__':
 				Pressjudge,Presscount = Land.Pressdetect(anypress)
 				GPSjudge,GAcount = Land.gpsdetect(anyalt)
 				if Pressjudge == 1 and GPSjudge == 1:
-					Other.saveLog(landingLog, 'Landing Judge', time.time(), BME280.bme280_read(), Pressjudge, GPS.readGPS(), GPSjudge)
+					Other.saveLog(landingLog, 'Landing Judge', time.time() - t_start, BME280.bme280_read(), Pressjudge, GPS.readGPS(), GPSjudge)
 					print('Rover has Landed')
 					break
 				else:
 					print('Rover is still in the air')
-					Other.saveLog(landingLog, 'Landing Judge', time.time(), BME280.bme280_read(), Land.Pressdetect(anypress), GPS.readGPS(), Land.gpsdetect(anyalt))
+					Other.saveLog(landingLog, 'Landing Judge', time.time() - t_start, BME280.bme280_read(), Land.Pressdetect(anypress), GPS.readGPS(), Land.gpsdetect(anyalt))
 					IM920.Send('P4D')
 			if t_landing < time.time() - t_release_start:
 				Other.saveLog(landingLog, 'Landing Judge by Timeout', time.time() - t_start)
