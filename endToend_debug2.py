@@ -231,7 +231,7 @@ if __name__ == '__main__':
 			#--- timeout is 60s ---#
 			while t2 - t1 < 60:
 				Luxflug = ParaDetection.ParaJudge(100)
-				Other.saveLog(ParaDetectionLog, 'ParaDetection', time.time() - t_start, BME280.bme280_read(), Luxflug)				
+				Other.saveLog(ParaDetectionLog, 'ParaDetection', time.time() - t_start, TSL2561.readLux(), Luxflug)				
 				if Luxflug[0] == 1:
 					break
 				t1 =time.time()
