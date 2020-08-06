@@ -279,7 +279,7 @@ if __name__ == '__main__':
 				t_Run_start = time.time()
 				print('Run Phase Started {}'.format(time.time() - t_start))
 
-				direction = Calibration2.calculate_direction(lon2,lat2)
+				direction = Calibration.calculate_direction(lon2,lat2)
 				goal_distance = direction["distance"]
 				# ------------- GPS navigate ------------- #
 				while goal_distance >= 5 and land_point_distance >= 5:
@@ -287,21 +287,21 @@ if __name__ == '__main__':
 					while True:
 						print('Calibration Start')
 						#--- calculate offset ---#
-						magdata = Calibration2.magdata_matrix()
-						magdata_offset = Calibration2.calculate_offset(magdata)
+						magdata = Calibration.magdata_matrix()
+						magdata_offset = Calibration.calculate_offset(magdata)
 						magx_off = magdata_offset[3]
 						magy_off = magdata_offset[4]
 						magz_off = magdata_offset[5]
 						Other.saveLog(CalibrationLog, 'Calibration', time.time() - t_start, magdata, magx_off, magy_off, magz_off)
 						time.sleep(1)
 						#--- calculate θ ---#
-						data = Calibration2.get_data()
+						data = Calibration.get_data()
 						magx = data[0]
 						magy = data[1]
 						#--- 0 <= θ <= 360 ---#
-						θ = Calibration2.calculate_angle_2D(magx,magy,magx_off,magy_off)
+						θ = Calibration.calculate_angle_2D(magx,magy,magx_off,magy_off)
 						#------------- rotate contorol -------------#
-						judge = Calibration2.rotate_control(θ,lon2,lat2)
+						judge = Calibration.rotate_control(θ,lon2,lat2)
 						if judge == False:
 							try:
 								run = pwm_control.Run()
@@ -330,7 +330,7 @@ if __name__ == '__main__':
 						run.straight_h()
 						time.sleep(1)
 						#--- calculate  goal direction ---#
-						direction = Calibration2.calculate_direction(lon2,lat2)
+						direction = Calibration.calculate_direction(lon2,lat2)
 						land_point_distance = ParaAvoidance.Parachute_area_judge(longitude_land,latitude_land)
 						Other.saveLog(Run_GPSLog, 'Run_GPS', time.time() - t_start, goal_distance, land_point_distance, GPS.readGPS())
 						if land_point_distance <= 5:
@@ -343,11 +343,11 @@ if __name__ == '__main__':
 						#--- 0 <= azimuth <= 360 ---#
 						azimuth = direction["azimuth1"]
 						#--- calculate θ ---#
-						data = Calibration2.get_data()
+						data = Calibration.get_data()
 						magx = data[0]
 						magy = data[1]
 						#--- 0 <= θ <= 360 ---#
-						θ = Calibration2.calculate_angle_2D(magx,magy,magx_off,magy_off)
+						θ = Calibration.calculate_angle_2D(magx,magy,magx_off,magy_off)
 
 						#--- if rover go wide left, turn right ---#
 						#--- 15 <= azimuth <= 360 ---#
@@ -400,7 +400,7 @@ if __name__ == '__main__':
 								print("Rover can't move any more")
 								break
 						#--- calculate  goal direction ---#
-						direction = Calibration2.calculate_direction(lon2,lat2)
+						direction = Calibration.calculate_direction(lon2,lat2)
 						land_point_distance = ParaAvoidance.Parachute_area_judge(longitude_land,latitude_land)
 						Other.saveLog(Run_GPSLog, 'Run_GPS', time.time() - t_start, goal_distance, land_point_distance, GPS.readGPS())
 						if land_point_distance <= 5:
@@ -425,7 +425,7 @@ if __name__ == '__main__':
 			print('Goal Detection Phase Started {}'.format(time.time() - t_start))
 			try:
 				# --- calculate the distance to the goal --- #
-				direction = Calibration2.calculate_direction(lon2,lat2)
+				direction = Calibration.calculate_direction(lon2,lat2)
 				goal_distance = direction["distance"]
 				# --- if the distance to the goal is within 5 meters --- #
 				while goal_distance <= 5.0:
