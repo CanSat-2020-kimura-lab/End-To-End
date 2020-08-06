@@ -118,6 +118,8 @@ if __name__ == '__main__':
 	try:
 		print('Program Start {0}'.format(time.time()))
 		t_start = time.time()
+		phaseChk += 1
+		print('phaseChk = '+str(phaseChk))
 
 		# --- Setup Phase --- #
 		setup()
