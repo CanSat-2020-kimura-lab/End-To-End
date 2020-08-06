@@ -182,7 +182,7 @@ if __name__ == '__main__':
 					break
 				else:
 					print('Rover is still in the air')
-					Other.saveLog(landingLog, 'Landing Judge', time.time() - t_start, BME280.bme280_read(), Land.Pressdetect(anypress), GPS.readGPS(), Land.gpsdetect(anyalt))
+					Other.saveLog(landingLog, 'Rover is still in the air', time.time() - t_start, BME280.bme280_read(), Land.Pressdetect(anypress), GPS.readGPS(), Land.gpsdetect(anyalt))
 					IM920.Send('P4D')
 			if t_landing < time.time() - t_release_start:
 				Other.saveLog(landingLog, 'Landing Judge by Timeout', time.time() - t_start)
