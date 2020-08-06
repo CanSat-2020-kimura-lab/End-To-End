@@ -238,7 +238,7 @@ if __name__ == '__main__':
 			phaseChk += 1
 			print('phaseChk = '+str(phaseChk))
 
-		while True:
+		while phaseChk == 7 or phaseChk == 8:
 			# --- Parachute Avoidance Phase --- #
 			if phaseChk == 7:
 				IM920.Send('P7S')
