@@ -61,6 +61,7 @@ t_landing = 60
 # --- For Sensor Data --- #
 bme280data = [0.0, 0.0, 0.0, 0.0, 0.0]
 GPS_data = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+goal_value = [0.0, 0.0, 0.0, 0.0]
 
 # --- For Judgement --- #
 luxcount = 0
@@ -429,17 +430,17 @@ if __name__ == '__main__':
 					goalflug = 1
 					# --- until the goal decision --- #
 					while goalflug != 0:
-						goalflug, goalarea, goalGAP, photoname = goaldetection.GoalDetection("/home/pi/photo/photo",200 ,20, 80, 7000)
-						print("goalflug", goalflug, "goalarea",goalarea, "goalGAP", goalGAP, "name", photoname)
-						Other.saveLog(goalDetectionLog, time.time() - t_start, GPS.readGPS(), goalflug, goalarea, goalGAP, photoname)
+						goal_value = goaldetection.GoalDetection("/home/pi/photo/photo",200 ,20, 80, 7000)
+						print("goalflug", goal_value[0], "goalarea",goal_value[1], "goalGAP", goal_value[2], "name", goal_value[3])
+						Other.saveLog(goalDetectionLog, time.time() - t_start, goal_value, GPS.readGPS())
 						# --- if the pixcel error is -30 or less, rotate left --- #
-						if goalGAP <= -30.0:
+						if goal_value[2] <= -30.0:
 							print('Turn left')
 							run = pwm_control.Run()
 							run.turn_left_l()
 							time.sleep(0.5)
 						# --- if the pixcel error is 30 or more, rotate right --- #
-						elif 30 <= goalGAP:
+						elif 30 <= goal_value[2]:
 							print('Turn right')
 							run = pwm_control.Run()
 							run.turn_right_l()
