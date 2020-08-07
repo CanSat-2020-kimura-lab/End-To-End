@@ -173,9 +173,13 @@ if __name__ == '__main__':
 			print('Landing Phase Started {}'.format(time.time() - t_start))
 
 			# --- Landing Judgement, 'while' is until timeout --- #
-			while time.time() - t_landing_start <= t_landing:
-				Pressjudge,Presscount = Land.Pressdetect(anypress)
-				GPSjudge,GAcount = Land.gpsdetect(anyalt)
+			while time.time() - t_landPresscount,ing_start <= t_landing:
+				Presscount,Pressjudge = Land.Pressdetect(anypress)
+				GAcount,GPSjudge = Land.gpsdetect(anyalt)
+				#print(Presscount)
+				#print(GAcount)
+				#print(Pressjudge)
+				#print(GPSjudge)
 				if Pressjudge == 1 and GPSjudge == 1:
 					Other.saveLog(landingLog, 'Landing Judge', time.time() - t_start, BME280.bme280_read(), Pressjudge, GPS.readGPS(), GPSjudge)
 					print('Rover has Landed')
