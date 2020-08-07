@@ -71,9 +71,9 @@ GAcount = 0
 luxjudge = 0
 pressjudge = 0
 gpsjudge = 0
-anylux = 0
+anylux = 200
 anypress = 0.3
-anyalt = 0.1
+anyalt = 30
 
 # --- For Photo Path --- #
 photo_path = '/home/pi/photo/photo'
@@ -196,7 +196,6 @@ if __name__ == '__main__':
 			phaseChk += 1
 			print('phaseChk = '+str(phaseChk))
 
-		'''
 		# --- Melting Phase --- #
 		if phaseChk == 5:
 			IM920.Send('P5S')
@@ -204,12 +203,12 @@ if __name__ == '__main__':
 			Other.saveLog(meltingLog, time.time() - t_start, GPS.readGPS(), "Melting Start")
 			t_melting_start = time.time()
 			print('Melting Phase Started {}'.format(time.time() - t_start))
-			Melting.Melting()
+			#Melting.Melting()
 			Other.saveLog(meltingLog, time.time() - t_start, GPS.readGPS(), "Melting Finished")
 			IM920.Send('P5F')
 			phaseChk += 1
 			print('phaseChk = '+str(phaseChk))
-		'''
+
 		# --- Mission Phase --- #
 		Capture.Capture("/home/pi/photo/mission", 320, 240)
 		img = cv2.imread("/home/pi/photo/mission.jpg")
@@ -302,7 +301,7 @@ if __name__ == '__main__':
 						#--- 0 <= θ <= 360 ---#
 						θ = Calibration.calculate_angle_2D(magx,magy,magx_off,magy_off)
 						#------------- rotate contorol -------------#
-						judge = Calibration.rotate_control(θ,lon2,lat2)
+						judge = Calibration.rotate_control(θ,lon2,lat2,t_start)
 						if judge == False:
 							try:
 								run = pwm_control.Run()
@@ -339,7 +338,7 @@ if __name__ == '__main__':
 							break
 						goal_distance = direction["distance"]
 						print('goal distance ='+str(goal_distance))
-						if goal_distance <= 15:
+						if goal_distance <= 5:
 							phaseChk += 1
 							break
 						#--- 0 <= azimuth <= 360 ---#
