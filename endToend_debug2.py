@@ -340,6 +340,7 @@ if __name__ == '__main__':
 						goal_distance = direction["distance"]
 						print('goal distance ='+str(goal_distance))
 						if goal_distance <= 15:
+							phaseChk += 1
 							break
 						#--- 0 <= azimuth <= 360 ---#
 						azimuth = direction["azimuth1"]
@@ -410,12 +411,12 @@ if __name__ == '__main__':
 						goal_distance = direction["distance"]
 						print('goal distance ='+str(goal_distance))
 						if goal_distance <= 15:
+							phaseChk += 1
 							break
 						loop_count += 1
 						print('loop count is '+str(loop_count))
 				
 				IM920.Send('P8F')
-				phaseChk += 1
 				print('phaseChk = '+str(phaseChk))
 
 		# --- Goal Detection Phase --- #
