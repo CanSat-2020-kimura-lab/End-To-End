@@ -359,7 +359,7 @@ if __name__ == '__main__':
 							print('turn right to adjustment')
 							run = pwm_control.Run()
 							run.turn_right_l()
-							time.sleep(0.5)
+							time.sleep(0.2)
 						#--- 0 <= azimuth < 15 ---#
 						elif azimuth - 15 < 0:
 							azimuth += 360
@@ -367,7 +367,7 @@ if __name__ == '__main__':
 								print('turn right to adjustment')
 								run = pwm_control.Run()
 								run.turn_right_l()
-								time.sleep(0.5)							
+								time.sleep(0.2)							
 
 						#--- if rover go wide right, turn left ---#
 						#--- 0 <= azimuth <= 345 ---#
@@ -375,7 +375,7 @@ if __name__ == '__main__':
 							print('turn left to adjustment')
 							run = pwm_control.Run()
 							run.turn_left_l()
-							time.sleep(0.5)
+							time.sleep(0.2)
 						#--- 345 < azimuth <= 360 ---#
 						elif azimuth + 15 > 360:
 							azimuth -= 360
@@ -383,7 +383,7 @@ if __name__ == '__main__':
 								print('turn left to adjustment')
 								run = pwm_control.Run()
 								run.turn_left_l()
-								time.sleep(0.5)
+								time.sleep(0.2)
 						#--- stuck detection ---#
 						moved_distance = Stuck.stuck_detection2(longitude_past,latitude_past)
 						if moved_distance >= 15:
