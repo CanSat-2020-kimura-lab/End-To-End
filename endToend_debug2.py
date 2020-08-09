@@ -286,10 +286,7 @@ if __name__ == '__main__':
 				direction = Calibration.calculate_direction(lon2,lat2)
 				goal_distance = direction["distance"]
 				stop_count = False
-				# ------------- GPS navigate ------------- #
-				while goal_distance >= 5 and land_point_distance >= 5:
-					if stop_count == True:
-						break
+				while True:
 					#------------- Calibration -------------#
 					print('Calibration Start')
 					#--- calculate offset ---#
@@ -306,19 +303,44 @@ if __name__ == '__main__':
 					magy = data[1]
 					#--- 0 <= θ <= 360 ---#
 					θ = Calibration.calculate_angle_2D(magx,magy,magx_off,magy_off)
+					#------------- rotate contorol -------------#
+					judge = Calibration.rotate_control(θ,lon2,lat2,t_start)
+					#--- rotate control timeout ---#
+					if judge == False:
+						try:
+							run = pwm_control.Run()
+							run.straight_h()
+							time.sleep(1)
+						finally:
+							run = pwm_control.Run()
+							run.stop()
+							time.sleep(1)					
+					else:
+						#--- judge = True (rotate control successed) ---#
+						run = pwm_control.Run()
+						run.stop()
+						time.sleep(1)
+						break
+				# ------------- GPS navigate ------------- #
+				while goal_distance >= 5 and land_point_distance >= 5:
+					if stop_count == True:
+						break
 					while True:
+						#--- calculate θ ---#
+						data = Calibration.get_data()
+						magx = data[0]
+						magy = data[1]
+						#--- 0 <= θ <= 360 ---#
+						θ = Calibration.calculate_angle_2D(magx,magy,magx_off,magy_off)
 						#------------- rotate contorol -------------#
 						judge = Calibration.rotate_control(θ,lon2,lat2,t_start)
+						#--- rotate control timeout ---#
 						if judge == False:
-							try:
-								run = pwm_control.Run()
-								run.straight_h()
-								time.sleep(1)
-							finally:
-								run = pwm_control.Run()
-								run.stop()
-								time.sleep(1)					
+							run = pwm_control.Run()
+							run.stop()
+							time.sleep(1)					
 						else:
+							#--- judge = True (rotate control successed) ---#
 							run = pwm_control.Run()
 							run.stop()
 							time.sleep(1)
