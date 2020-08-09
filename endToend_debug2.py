@@ -91,8 +91,8 @@ goalDetectionLog = '/home/pi/log/goalDetectionLog.txt'
 errorLog = '/home/pi/log/errorLog.txt'
 	
 #--- difine goal latitude and longitude ---#
-lon2 = 139.5430
-lat2 = 35.553
+lon2 = 139.910338 #unnga:139.5430 yakugaku:139.912130
+lat2 = 35.917945 #unga:35.553 yakugaku:35.920528
 
 pi = pigpio.pi()
 
@@ -210,10 +210,14 @@ if __name__ == '__main__':
 			print('phaseChk = '+str(phaseChk))
 
 		# --- Mission Phase --- #
-		Capture.Capture("/home/pi/photo/mission", 320, 240)
-		img = cv2.imread("/home/pi/photo/mission.jpg")
+		camera = picamera.PiCamera()
+		camera.resolution = (320,240)
+		camera.capture('/home/pi/photo/mission1.jpg')
+		img = cv2.imread('/home/pi/photo/mission1.jpg')
 		dst = cv2.resize(img, (img.shape[1]*2, img.shape[0]*2), interpolation=cv2.INTER_NEAREST)
-		Capture.Capture("/home/pi/photo/mission", 640, 480)
+		cv2.imwrite('/home/pi/photo/nearest1.jpg',dst)
+		camera.resolution = (640,480)
+		camera.capture('/home/pi/photo/mission2.jpg')
 
 		# --- Parachute Detection Phase --- #
 		if phaseChk == 6:
