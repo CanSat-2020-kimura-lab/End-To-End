@@ -291,22 +291,22 @@ if __name__ == '__main__':
 					if stop_count == True:
 						break
 					#------------- Calibration -------------#
+					print('Calibration Start')
+					#--- calculate offset ---#
+					magdata = Calibration.magdata_matrix()
+					magdata_offset = Calibration.calculate_offset(magdata)
+					magx_off = magdata_offset[3]
+					magy_off = magdata_offset[4]
+					magz_off = magdata_offset[5]
+					Other.saveLog(CalibrationLog, 'Calibration', time.time() - t_start, magdata, magx_off, magy_off, magz_off)
+					time.sleep(1)
+					#--- calculate θ ---#
+					data = Calibration.get_data()
+					magx = data[0]
+					magy = data[1]
+					#--- 0 <= θ <= 360 ---#
+					θ = Calibration.calculate_angle_2D(magx,magy,magx_off,magy_off)
 					while True:
-						print('Calibration Start')
-						#--- calculate offset ---#
-						magdata = Calibration.magdata_matrix()
-						magdata_offset = Calibration.calculate_offset(magdata)
-						magx_off = magdata_offset[3]
-						magy_off = magdata_offset[4]
-						magz_off = magdata_offset[5]
-						Other.saveLog(CalibrationLog, 'Calibration', time.time() - t_start, magdata, magx_off, magy_off, magz_off)
-						time.sleep(1)
-						#--- calculate θ ---#
-						data = Calibration.get_data()
-						magx = data[0]
-						magy = data[1]
-						#--- 0 <= θ <= 360 ---#
-						θ = Calibration.calculate_angle_2D(magx,magy,magx_off,magy_off)
 						#------------- rotate contorol -------------#
 						judge = Calibration.rotate_control(θ,lon2,lat2,t_start)
 						if judge == False:
@@ -363,7 +363,7 @@ if __name__ == '__main__':
 							print('turn right to adjustment')
 							run = pwm_control.Run()
 							run.turn_right_l()
-							time.sleep(0.2)
+							time.sleep(0.1)
 						#--- 0 <= azimuth < 15 ---#
 						elif azimuth - 15 < 0:
 							azimuth += 360
@@ -371,7 +371,7 @@ if __name__ == '__main__':
 								print('turn right to adjustment')
 								run = pwm_control.Run()
 								run.turn_right_l()
-								time.sleep(0.2)							
+								time.sleep(0.1)							
 
 						#--- if rover go wide right, turn left ---#
 						#--- 0 <= azimuth <= 345 ---#
@@ -379,7 +379,7 @@ if __name__ == '__main__':
 							print('turn left to adjustment')
 							run = pwm_control.Run()
 							run.turn_left_l()
-							time.sleep(0.2)
+							time.sleep(0.1)
 						#--- 345 < azimuth <= 360 ---#
 						elif azimuth + 15 > 360:
 							azimuth -= 360
@@ -387,7 +387,10 @@ if __name__ == '__main__':
 								print('turn left to adjustment')
 								run = pwm_control.Run()
 								run.turn_left_l()
-								time.sleep(0.2)
+								time.sleep(0.1)
+						run = pwm_control.Run()
+						run.straight_h()
+						time.sleep(0.5)
 						#--- stuck detection ---#
 						moved_distance = Stuck.stuck_detection2(longitude_past,latitude_past)
 						if moved_distance >= 15:
