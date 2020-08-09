@@ -281,8 +281,11 @@ if __name__ == '__main__':
 
 				direction = Calibration.calculate_direction(lon2,lat2)
 				goal_distance = direction["distance"]
+				stop_count = False
 				# ------------- GPS navigate ------------- #
 				while goal_distance >= 5 and land_point_distance >= 5:
+					if stop_count == True:
+						break
 					#------------- Calibration -------------#
 					while True:
 						print('Calibration Start')
@@ -399,6 +402,8 @@ if __name__ == '__main__':
 							stuck_count += 1
 							if stuck_count >= 3:
 								print("Rover can't move any more")
+								stop_count = True
+								phaseChk += 2
 								break
 						#--- calculate  goal direction ---#
 						direction = Calibration.calculate_direction(lon2,lat2)
