@@ -328,11 +328,14 @@ if __name__ == '__main__':
 						run.stop()
 						time.sleep(1)
 						break
+				if not goal_distance >= 5 and land_point_distance >= 1:
+					phaseChk += 1
 				# ------------- GPS navigate ------------- #
-				while goal_distance >= 5 and land_point_distance >= 1:
+				while goal_distance >= 15 and land_point_distance >= 1:
 					if stop_count == True:
 						break
-					if goal_distance <= 5:
+					if goal_distance <= 15:
+						phaseChk += 1
 						print('phaseChk(l336) = ', phaseChk)
 						break
 					while True:
@@ -372,12 +375,12 @@ if __name__ == '__main__':
 						direction = Calibration.calculate_direction(lon2,lat2)
 						land_point_distance = ParaAvoidance.Parachute_area_judge(longitude_land,latitude_land)
 						Other.saveLog(Run_GPSLog, 'Run_GPS', time.time() - t_start, goal_distance, land_point_distance, GPS.readGPS())
-						if land_point_distance <= 5:
+						if land_point_distance <= 1:
 							phaseChk -= 1							
 							break
 						goal_distance = direction["distance"]
 						print('goal distance ='+str(goal_distance))
-						if goal_distance <= 5:
+						if goal_distance <= 15:
 							phaseChk += 1
 							print('phaseChk(l382) = ', phaseChk)
 							break
