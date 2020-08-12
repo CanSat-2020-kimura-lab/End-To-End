@@ -530,3 +530,7 @@ if __name__ == '__main__':
 
 	except:
 		close()
+
+	finally:
+		run = pwm_control.Run()
+		run.stop()	
