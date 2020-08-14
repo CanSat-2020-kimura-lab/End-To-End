@@ -258,7 +258,7 @@ if __name__ == '__main__':
 
 				while land_point_distance <= 1:
 					try:
-						flug == -1
+						flug = -1
 						while flug == -1:
 							#--- first parachute detection ---#
 							flug, area, photoname = ParaDetection.ParaDetection("/home/pi/photo/photo",320,240,200,10,120)
@@ -289,47 +289,24 @@ if __name__ == '__main__':
 
 				direction = Calibration.calculate_direction(lon2,lat2)
 				goal_distance = direction["distance"]
+				print('goal_distance = ', goal_distance)
 				stop_count = False
-				while True:
-					#------------- Calibration -------------#
-					print('Calibration Start')
-					#--- calculate offset ---#
-					magdata = Calibration.magdata_matrix()
-					magdata_offset = Calibration.calculate_offset(magdata)
-					magx_off = magdata_offset[3]
-					magy_off = magdata_offset[4]
-					magz_off = magdata_offset[5]
-					Other.saveLog(CalibrationLog, 'Calibration', time.time() - t_start, magdata, magx_off, magy_off, magz_off)
-					time.sleep(1)
-					#--- calculate θ ---#
-					data = Calibration.get_data()
-					magx = data[0]
-					magy = data[1]
-					#--- 0 <= θ <= 360 ---#
-					θ = Calibration.calculate_angle_2D(magx,magy,magx_off,magy_off)
-					#------------- rotate contorol -------------#
-					judge = Calibration.rotate_control(θ,lon2,lat2,t_start)
-					#--- rotate control timeout ---#
-					if judge == False:
-						try:
-							run = pwm_control.Run()
-							run.straight_h()
-							time.sleep(1)
-						finally:
-							run = pwm_control.Run()
-							run.stop()
-							time.sleep(1)					
-					else:
-						#--- judge = True (rotate control successed) ---#
-						run = pwm_control.Run()
-						run.stop()
-						time.sleep(1)
-						break
+				
+				#--- calculate offset ---#
+				magdata = Calibration.magdata_matrix()
+				magdata_offset = Calibration.calculate_offset(magdata)
+				magx_off = magdata_offset[3]
+				magy_off = magdata_offset[4]
+				magz_off = magdata_offset[5]
+				Other.saveLog(CalibrationLog, 'Calibration', time.time() - t_start, magdata, magx_off, magy_off, magz_off)
+				time.sleep(1)
+					
 				# ------------- GPS navigate ------------- #
 				while goal_distance >= 5:
 					if stop_count == True:
 						break
 					if goal_distance <= 5:
+						phaseChk += 1
 						break
 					while True:
 						#--- calculate θ ---#
