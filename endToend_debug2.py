@@ -258,11 +258,14 @@ if __name__ == '__main__':
 
 				while land_point_distance <= 1:
 					try:
-						#--- first parachute detection ---#
-						flug, area, photoname = ParaDetection.ParaDetection("/home/pi/photo/photo",320,240,200,10,120)
-						Other.saveLog(ParaAvoidanceLog, 'ParaAvoidance', time.time() - t_start, flug, area, photoname, GPS.readGPS())
+						flug == -1
+						while flug == -1:
+							#--- first parachute detection ---#
+							flug, area, photoname = ParaDetection.ParaDetection("/home/pi/photo/photo",320,240,200,10,120)
+							Other.saveLog(ParaAvoidanceLog, 'ParaAvoidance', time.time() - t_start, flug, area, photoname, GPS.readGPS())
 						ParaAvoidance.Parachute_Avoidance(flug,t_start)
 						land_point_distance = ParaAvoidance.Parachute_area_judge(longitude_land,latitude_land)
+						print('land_point_distance = ', land_point_distance)
 
 					except KeyboardInterrupt:
 						print("Emergency!")
