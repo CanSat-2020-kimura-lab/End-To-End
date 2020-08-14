@@ -209,7 +209,7 @@ if __name__ == '__main__':
 			IM920.Send('P5F')
 			phaseChk += 1
 			print('phaseChk = '+str(phaseChk))
-
+		'''
 		# --- Mission Phase --- #
 		camera = picamera.PiCamera()
 		camera.resolution = (320,240)
@@ -219,6 +219,7 @@ if __name__ == '__main__':
 		cv2.imwrite('/home/pi/photo/nearest1.jpg',dst)
 		camera.resolution = (640,480)
 		camera.capture('/home/pi/photo/mission2.jpg')
+		'''
 
 		# --- Parachute Detection Phase --- #
 		if phaseChk == 6:
