@@ -258,7 +258,7 @@ if __name__ == '__main__':
 
 				while land_point_distance <= 1:
 					try:
-						flug == -1
+						flug = -1
 						while flug == -1:
 							#--- first parachute detection ---#
 							flug, area, photoname = ParaDetection.ParaDetection("/home/pi/photo/photo",320,240,200,10,120)
