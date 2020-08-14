@@ -23,6 +23,7 @@ import traceback
 from threading import Thread
 import math
 import cv2
+import picamera
 
 import BME280
 import BMX055
@@ -34,7 +35,7 @@ import BMX055
 import Other
 import pwm_control
 import Stuck
-import Calibration2
+import Calibration
 import gps_navigate
 import ParaAvoidance
 import ParaDetection
@@ -91,8 +92,8 @@ goalDetectionLog = '/home/pi/log/goalDetectionLog.txt'
 errorLog = '/home/pi/log/errorLog.txt'
 	
 #--- difine goal latitude and longitude ---#
-lon2 = 129.910068 #unnga:139.5430 yakugaku:139.912130
-lat2 = 35.917897 #unga:35.553 yakugaku:35.920528
+lon2 = 139.910338 #unnga:139.5430 yakugaku:139.912130
+lat2 = 35.917945 #unga:35.553 yakugaku:35.920528
 
 pi = pigpio.pi()
 
@@ -209,7 +210,6 @@ if __name__ == '__main__':
 			phaseChk += 1
 			print('phaseChk = '+str(phaseChk))
 
-		'''
 		# --- Mission Phase --- #
 		camera = picamera.PiCamera()
 		camera.resolution = (320,240)
@@ -219,7 +219,6 @@ if __name__ == '__main__':
 		cv2.imwrite('/home/pi/photo/nearest1.jpg',dst)
 		camera.resolution = (640,480)
 		camera.capture('/home/pi/photo/mission2.jpg')
-		'''
 
 		# --- Parachute Detection Phase --- #
 		if phaseChk == 6:
@@ -256,14 +255,13 @@ if __name__ == '__main__':
 				t_ParaAvoidance_start = time.time()
 				print('Parachute Avoidance Phase Started {}'.format(time.time() - t_start))
 
-				while land_point_distance <= 1:
+				while land_point_distance <= 5:
 					try:
 						#--- first parachute detection ---#
 						flug, area, photoname = ParaDetection.ParaDetection("/home/pi/photo/photo",320,240,200,10,120)
 						Other.saveLog(ParaAvoidanceLog, 'ParaAvoidance', time.time() - t_start, flug, area, photoname, GPS.readGPS())
 						ParaAvoidance.Parachute_Avoidance(flug,t_start)
 						land_point_distance = ParaAvoidance.Parachute_area_judge(longitude_land,latitude_land)
-						print('land_point_distance = ', land_point_distance)
 
 					except KeyboardInterrupt:
 						print("Emergency!")
@@ -286,70 +284,57 @@ if __name__ == '__main__':
 				t_Run_start = time.time()
 				print('Run Phase Started {}'.format(time.time() - t_start))
 
-				direction = Calibration2.calculate_direction(lon2,lat2)
+				direction = Calibration.calculate_direction(lon2,lat2)
 				goal_distance = direction["distance"]
-				print(goal_distance)
 				stop_count = False
 				while True:
 					#------------- Calibration -------------#
 					print('Calibration Start')
 					#--- calculate offset ---#
-					magdata = Calibration2.magdata_matrix()
-					magdata_offset = Calibration2.calculate_offset(magdata)
+					magdata = Calibration.magdata_matrix()
+					magdata_offset = Calibration.calculate_offset(magdata)
 					magx_off = magdata_offset[3]
 					magy_off = magdata_offset[4]
 					magz_off = magdata_offset[5]
 					Other.saveLog(CalibrationLog, 'Calibration', time.time() - t_start, magdata, magx_off, magy_off, magz_off)
 					time.sleep(1)
 					#--- calculate θ ---#
-					data = Calibration2.get_data()
+					data = Calibration.get_data()
 					magx = data[0]
 					magy = data[1]
 					#--- 0 <= θ <= 360 ---#
-					θ = Calibration2.calculate_angle_2D(magx,magy,magx_off,magy_off)
+					θ = Calibration.calculate_angle_2D(magx,magy,magx_off,magy_off)
 					#------------- rotate contorol -------------#
-					judge = Calibration2.rotate_control(θ,lon2,lat2,t_start)
-					print('judge = ', judge)
+					judge = Calibration.rotate_control(θ,lon2,lat2,t_start)
 					#--- rotate control timeout ---#
 					if judge == False:
 						try:
 							run = pwm_control.Run()
-							print('judge==False: run.straight_h')
 							run.straight_h()
 							time.sleep(1)
-							#--- back to stop ---#
-							run.back()
-							time.sleep(0.5)
 						finally:
 							run = pwm_control.Run()
 							run.stop()
-							time.sleep(1)		
+							time.sleep(1)					
 					else:
 						#--- judge = True (rotate control successed) ---#
 						run = pwm_control.Run()
-						print('judge==True: run.stop')
 						run.stop()
 						time.sleep(1)
 						break
-				if not goal_distance >= 5 and land_point_distance >= 1:
-					phaseChk += 1
 				# ------------- GPS navigate ------------- #
-				while goal_distance >= 15 and land_point_distance >= 1:
+				while goal_distance >= 5 and land_point_distance >= 1:
 					if stop_count == True:
-						break
-					if goal_distance <= 15:
-						phaseChk += 1
-						print('phaseChk(l336) = ', phaseChk)
 						break
 					while True:
 						#--- calculate θ ---#
-						data = Calibration2.get_data()
+						data = Calibration.get_data()
 						magx = data[0]
 						magy = data[1]
 						#--- 0 <= θ <= 360 ---#
-						θ = Calibration2.calculate_angle_2D(magx,magy,magx_off,magy_off)
+						θ = Calibration.calculate_angle_2D(magx,magy,magx_off,magy_off)
 						#------------- rotate contorol -------------#
-						judge = Calibration2.rotate_control(θ,lon2,lat2,t_start)
+						judge = Calibration.rotate_control(θ,lon2,lat2,t_start)
 						#--- rotate control timeout ---#
 						if judge == False:
 							run = pwm_control.Run()
@@ -366,35 +351,29 @@ if __name__ == '__main__':
 					latitude_past = location[1]
 					#--- initialize count ---#
 					loop_count = 0
-					stuck_count = 0
 
 					#------------- run straight -------------#
 					while loop_count <= 5:
 						print('Go straight')
 						run = pwm_control.Run()
-						run.straight_h()
-						time.sleep(1)
+						run.straight_n()
+						#time.sleep(1)
 						#--- calculate  goal direction ---#
-						direction = Calibration2.calculate_direction(lon2,lat2)
-						land_point_distance = ParaAvoidance.Parachute_area_judge(longitude_land,latitude_land)
+						direction = Calibration.calculate_direction(lon2,lat2)
 						Other.saveLog(Run_GPSLog, 'Run_GPS', time.time() - t_start, goal_distance, land_point_distance, GPS.readGPS())
-						if land_point_distance <= 1:
-							phaseChk -= 1							
-							break
 						goal_distance = direction["distance"]
 						print('goal distance ='+str(goal_distance))
-						if goal_distance <= 15:
+						if goal_distance <= 5:
 							phaseChk += 1
-							print('phaseChk(l382) = ', phaseChk)
 							break
 						#--- 0 <= azimuth <= 360 ---#
 						azimuth = direction["azimuth1"]
 						#--- calculate θ ---#
-						data = Calibration2.get_data()
+						data = Calibration.get_data()
 						magx = data[0]
 						magy = data[1]
 						#--- 0 <= θ <= 360 ---#
-						θ = Calibration2.calculate_angle_2D(magx,magy,magx_off,magy_off)
+						θ = Calibration.calculate_angle_2D(magx,magy,magx_off,magy_off)
 
 						#--- if rover go wide left, turn right ---#
 						#--- 15 <= azimuth <= 360 ---#
@@ -428,52 +407,24 @@ if __name__ == '__main__':
 								run.turn_left_l()
 								time.sleep(0.1)
 						run = pwm_control.Run()
-						run.straight_h()
-						time.sleep(0.5)
-						#--- stuck detection ---#
-						moved_distance = Stuck.stuck_detection2(longitude_past,latitude_past)
-						if moved_distance >= 5:
-							IM920.Send("Rover is moving now")
-							print('Rover is moving now')
-							stuck_count = 0
-							location = Stuck.stuck_detection1()
-							longitude_past = location[0]
-							latitude_past = location[1]     
-						else:
-							#--- stuck escape ---#
-							IM920.Send("Rover stucks now")
-							print('Stuck!')
-							Stuck.stuck_escape()
-							loop_count -= 1
-							stuck_count += 1
-							if stuck_count >= 3:
-								print("Rover can't move any more")
-								stop_count = True
-								phaseChk += 2
-								print('phaseChk = ', phaseChk)
-								break
+						run.straight_n()
+						#time.sleep(0.5)
 						#--- calculate  goal direction ---#
-						direction = Calibration2.calculate_direction(lon2,lat2)
-						land_point_distance = ParaAvoidance.Parachute_area_judge(longitude_land,latitude_land)
+						direction = Calibration.calculate_direction(lon2,lat2)
 						Other.saveLog(Run_GPSLog, 'Run_GPS', time.time() - t_start, goal_distance, land_point_distance, GPS.readGPS())
-						if land_point_distance <= 1:
-							phaseChk -= 1
-							print('phaseChk = ', phaseChk)							
-							break
 						goal_distance = direction["distance"]
 						print('goal distance ='+str(goal_distance))
-						if goal_distance <= 15:
+						if goal_distance <= 5:
 							phaseChk += 1
-							print('phaseChk = ', phaseChk)
 							break
 						loop_count += 1
 						print('loop count is '+str(loop_count))
-				
+
 				run = pwm_control.Run()
 				run.back()
 				time.sleep(0.2)
 				run.stop()
-				time.sleep(1)			
+				time.sleep(1)					
 				IM920.Send('P8F')
 				print('phaseChk = '+str(phaseChk))
 
@@ -485,37 +436,41 @@ if __name__ == '__main__':
 			print('Goal Detection Phase Started {}'.format(time.time() - t_start))
 			try:
 				# --- calculate the distance to the goal --- #
-				direction = Calibration2.calculate_direction(lon2,lat2)
+				direction = Calibration.calculate_direction(lon2,lat2)
 				goal_distance = direction["distance"]
+				print('goal_distance = ', goal_distance)
 				# --- if the distance to the goal is within 5 meters --- #
-				while goal_distance <= 5.0:
-					goalflug = 1
+				while goal_distance <= 5:
+					goal_value[0] = 1
 					# --- until the goal decision --- #
-					while goalflug != 0:
+					while goal_value[0] != 0:
 						goal_value = goaldetection.GoalDetection("/home/pi/photo/photo",200 ,20, 80, 7000)
 						print("goalflug", goal_value[0], "goalarea",goal_value[1], "goalGAP", goal_value[2], "name", goal_value[3])
 						Other.saveLog(goalDetectionLog, time.time() - t_start, goal_value, GPS.readGPS())
-						# --- if the pixcel error is -30 or less, rotate left --- #
-						if goal_value[2] <= -30.0:
-							print('Turn left')
-							run = pwm_control.Run()
-							run.turn_left_l()
-							time.sleep(0.5)
-						# --- if the pixcel error is 30 or more, rotate right --- #
-						elif 30 <= goal_value[2]:
-							print('Turn right')
-							run = pwm_control.Run()
-							run.turn_right_l()
-							time.sleep(0.5)
-						# --- if the pixcel error is greater than -30 and less than 30, go straight --- #
+						if goal_value[0] != -1:
+							# --- if the pixcel error is -30 or less, rotate left --- #
+							if goal_value[2] <= -30.0:
+								print('Turn left')
+								run = pwm_control.Run()
+								run.turn_left_l()
+								time.sleep(0.5)
+							# --- if the pixcel error is 30 or more, rotate right --- #
+							elif 30 <= goal_value[2]:
+								print('Turn right')
+								run = pwm_control.Run()
+								run.turn_right_l()
+								time.sleep(0.5)
+							# --- if the pixcel error is greater than -30 and less than 30, go straight --- #
+							else:
+								print('Go straight')
+								run = pwm_control.Run()
+								run.straight_h()
+								time.sleep(1.0)
 						else:
-							print('Go straight')
+							print('No goal in this flame !')
 							run = pwm_control.Run()
-							run.straight_h()
-							time.sleep(1.0)
-							#--- back to stop ---#
-							run.back()
-							time.sleep(0.5)
+							run.turn_right()
+							time.sleep(1)
 			
 					run = pwm_control.Run()
 					run.stop()
@@ -541,9 +496,7 @@ if __name__ == '__main__':
 
 	except:
 		close()
-
+	
 	finally:
 		run = pwm_control.Run()
 		run.stop()
-
-#--- back to stop ---#
