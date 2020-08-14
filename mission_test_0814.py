@@ -90,6 +90,7 @@ CalibrationLog = '/home/pi/log/CalibrationLog.txt'
 Run_GPSLog = '/home/pi/log/Run_GPSLog.txt'
 goalDetectionLog = '/home/pi/log/goalDetectionLog.txt'
 errorLog = '/home/pi/log/errorLog.txt'
+missionLog = '/home/pi/log/missionLog.txt'
 	
 #--- difine goal latitude and longitude ---#
 lon2 = 139.908507 #unnga:139.5430 yakugaku:139.912130
@@ -216,6 +217,8 @@ if __name__ == '__main__':
 			camera.resolution = (640,480)
 			camera.capture('/home/pi/photo/mission2.jpg')
 			print('Mission Phase Finished')
+			phaseChk += 1
+			print('phaseChk = ', phaseChk)
 			IM920.Send('P5F')
 
 		# --- Parachute Detection Phase --- #
