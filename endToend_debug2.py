@@ -322,7 +322,7 @@ if __name__ == '__main__':
 						time.sleep(1)
 						break
 				# ------------- GPS navigate ------------- #
-				while goal_distance >= 5 and land_point_distance >= 5:
+				while goal_distance >= 5 and land_point_distance >= 1:
 					if stop_count == True:
 						break
 					while True:
@@ -443,7 +443,7 @@ if __name__ == '__main__':
 							break
 						goal_distance = direction["distance"]
 						print('goal distance ='+str(goal_distance))
-						if goal_distance <= 15:
+						if goal_distance <= 5:
 							phaseChk += 1
 							break
 						loop_count += 1
@@ -462,32 +462,39 @@ if __name__ == '__main__':
 				# --- calculate the distance to the goal --- #
 				direction = Calibration.calculate_direction(lon2,lat2)
 				goal_distance = direction["distance"]
+				print('goal_distance = ', goal_distance)
 				# --- if the distance to the goal is within 5 meters --- #
-				while goal_distance <= 5.0:
-					goalflug = 1
+				while goal_distance <= 5:
+					goal_value[0] = 1
 					# --- until the goal decision --- #
-					while goalflug != 0:
+					while goal_value[0] != 0:
 						goal_value = goaldetection.GoalDetection("/home/pi/photo/photo",200 ,20, 80, 7000)
 						print("goalflug", goal_value[0], "goalarea",goal_value[1], "goalGAP", goal_value[2], "name", goal_value[3])
 						Other.saveLog(goalDetectionLog, time.time() - t_start, goal_value, GPS.readGPS())
-						# --- if the pixcel error is -30 or less, rotate left --- #
-						if goal_value[2] <= -30.0:
-							print('Turn left')
-							run = pwm_control.Run()
-							run.turn_left_l()
-							time.sleep(0.5)
-						# --- if the pixcel error is 30 or more, rotate right --- #
-						elif 30 <= goal_value[2]:
-							print('Turn right')
-							run = pwm_control.Run()
-							run.turn_right_l()
-							time.sleep(0.5)
-						# --- if the pixcel error is greater than -30 and less than 30, go straight --- #
+						if goal_value[0] != -1:
+							# --- if the pixcel error is -30 or less, rotate left --- #
+							if goal_value[2] <= -30.0:
+								print('Turn left')
+								run = pwm_control.Run()
+								run.turn_left_l()
+								time.sleep(0.5)
+							# --- if the pixcel error is 30 or more, rotate right --- #
+							elif 30 <= goal_value[2]:
+								print('Turn right')
+								run = pwm_control.Run()
+								run.turn_right_l()
+								time.sleep(0.5)
+							# --- if the pixcel error is greater than -30 and less than 30, go straight --- #
+							else:
+								print('Go straight')
+								run = pwm_control.Run()
+								run.straight_h()
+								time.sleep(1.0)
 						else:
-							print('Go straight')
+							print('No goal in this flame !')
 							run = pwm_control.Run()
-							run.straight_h()
-							time.sleep(1.0)
+							run.turn_right()
+							time.sleep(1)
 			
 					run = pwm_control.Run()
 					run.stop()
