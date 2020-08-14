@@ -132,7 +132,7 @@ if __name__ == '__main__':
 			IM920.Send('P1S')
 			Other.saveLog(phaseLog, '1', 'Program Started', time.time() - t_start)
 			IM920.Send('P1F')
-			phaseChk += 1
+			phaseChk += 7
 			print('phaseChk = '+str(phaseChk))
 
 		# --- Sleep Phase --- #
