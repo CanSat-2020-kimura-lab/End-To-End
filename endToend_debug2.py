@@ -23,6 +23,7 @@ import traceback
 from threading import Thread
 import math
 import cv2
+import picamera
 
 import BME280
 import BMX055
