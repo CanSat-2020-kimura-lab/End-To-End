@@ -246,7 +246,7 @@ if __name__ == '__main__':
 			phaseChk += 1
 			print('phaseChk = '+str(phaseChk))
 
-		while phaseChk == 7 or phaseChk == 8:
+		while phaseChk == 7:
 			# --- Parachute Avoidance Phase --- #
 			if phaseChk == 7:
 				IM920.Send('P7S')
@@ -254,7 +254,7 @@ if __name__ == '__main__':
 				t_ParaAvoidance_start = time.time()
 				print('Parachute Avoidance Phase Started {}'.format(time.time() - t_start))
 
-				while land_point_distance <= 5:
+				while land_point_distance <= 1:
 					try:
 						#--- first parachute detection ---#
 						flug, area, photoname = ParaDetection.ParaDetection("/home/pi/photo/photo",320,240,200,10,120)
