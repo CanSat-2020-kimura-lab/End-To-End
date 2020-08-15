@@ -146,7 +146,6 @@ if __name__ == '__main__':
 			direction = Calibration.calculate_direction(lon2,lat2)
 			goal_distance = direction["distance"]
 			goal_distance_before = goal_distance
-			stop_count = False
 			
 			#------------- Calibration -------------#
 			print('Calibration Start')
