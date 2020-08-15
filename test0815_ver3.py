@@ -158,6 +158,7 @@ def adjustment_angle(azimuth,magx_off,magy_off):
 			run = pwm_control.Run()
 			run.turn_right_l()
 			time.sleep(0.1)
+	run = pwm_control.Run()
 	run.straight_n()
 
 if __name__ == '__main__':
@@ -352,7 +353,8 @@ if __name__ == '__main__':
 				stuck_count = 0
 				# ------------- GPS navigate ------------- #
 				while goal_distance >= 5:
-					if goal_distance_before >= goal_distance:
+					if goal_distance_before <= goal_distance:
+						print('rotate control again')
 						run = pwm_control.Run()
 						run.stop()
 						time.sleep(1)
@@ -364,17 +366,6 @@ if __name__ == '__main__':
 						θ = Calibration.calculate_angle_2D(magx,magy,magx_off,magy_off)
 						#------------- rotate contorol -------------#
 						judge = Calibration.rotate_control(θ,lon2,lat2,t_start)
-						#--- rotate control timeout ---#
-						if judge == False:
-							run = pwm_control.Run()
-							run.stop()
-							time.sleep(1)					
-						else:
-							#--- judge = True (rotate control successed) ---#
-							run = pwm_control.Run()
-							run.stop()
-							time.sleep(1)
-							break
 					else:
 						#--- initialize goal distance before ---#
 						goal_distance_before = goal_distance
@@ -495,4 +486,6 @@ if __name__ == '__main__':
 	except:
 		close()
 
-#8/15/12:00#
+	finally:
+		print('end')
+#8/15/20:08#
