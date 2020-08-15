@@ -454,6 +454,11 @@ if __name__ == '__main__':
 						loop_count += 1
 						print('loop count is '+str(loop_count))
 				
+				run = pwm_control.Run()
+				run.back()
+				time.sleep(0.2)
+				run.stop()
+				time.sleep(1)
 				IM920.Send('P8F')
 				print('phaseChk = '+str(phaseChk))
 
