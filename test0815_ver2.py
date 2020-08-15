@@ -160,6 +160,7 @@ if __name__ == '__main__':
 			# ------------- GPS navigate ------------- #
 			while goal_distance >= 5:
 				if goal_distance_before <= goal_distance:
+					print('rotate control again')
 					run = pwm_control.Run()
 					run.stop()
 					time.sleep(1)
