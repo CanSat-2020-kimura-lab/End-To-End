@@ -16,7 +16,6 @@ sys.path.append('/home/pi/git/kimuralab/IntegratedProgram/ParaAvoidance')
 sys.path.append('/home/pi/git/kimuralab/IntegratedProgram/Stuck')
 sys.path.append('/home/pi/git/kimuralab/Other')
 
-sys.path.append('C:/Users/user/anaconda3/envs/cansat1/PM/Detection')
 import time
 import serial
 import pigpio
@@ -293,7 +292,6 @@ if __name__ == '__main__':
 				direction = Calibration.calculate_direction(lon2,lat2)
 				goal_distance = direction["distance"]
 				goal_distance_before = goal_distance
-				stop_count = False
 				
 				#------------- Calibration -------------#
 				print('Calibration Start')
@@ -305,12 +303,9 @@ if __name__ == '__main__':
 				magz_off = magdata_offset[5]
 				Other.saveLog(CalibrationLog, 'Calibration', time.time() - t_start, magdata, magx_off, magy_off, magz_off)
 				time.sleep(1)
-				if goal_distance <= 5:
-					phaseChk += 1
-					print("rover is alredy near from the goal before running")
 				# ------------- GPS navigate ------------- #
 				while goal_distance >= 5:
-					if goal_distance_before >= goal_distance:
+					if goal_distance_before <= goal_distance:
 						run = pwm_control.Run()
 						run.stop()
 						time.sleep(1)
@@ -322,17 +317,7 @@ if __name__ == '__main__':
 						θ = Calibration.calculate_angle_2D(magx,magy,magx_off,magy_off)
 						#------------- rotate contorol -------------#
 						judge = Calibration.rotate_control(θ,lon2,lat2,t_start)
-						#--- rotate control timeout ---#
-						if judge == False:
-							run = pwm_control.Run()
-							run.stop()
-							time.sleep(1)					
-						else:
-							#--- judge = True (rotate control successed) ---#
-							run = pwm_control.Run()
-							run.stop()
-							time.sleep(1)
-							break
+
 					else:
 						#--- initialize goal distance before ---#
 						goal_distance_before = goal_distance
@@ -347,7 +332,7 @@ if __name__ == '__main__':
 					goal_distance = direction["distance"]
 					print('goal distance ='+str(goal_distance))
 					
-				
+				phaseChk += 1
 				run = pwm_control.Run()
 				run.back()
 				time.sleep(0.2)
@@ -425,4 +410,6 @@ if __name__ == '__main__':
 	except:
 		close()
 
-#8/14/20:30#
+	finally:
+		print('end')
+#8/15/19:17#
