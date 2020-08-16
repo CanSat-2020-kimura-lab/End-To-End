@@ -91,10 +91,10 @@ CalibrationLog = '/home/pi/log/CalibrationLog.txt'
 Run_GPSLog = '/home/pi/log/Run_GPSLog.txt'
 goalDetectionLog = '/home/pi/log/goalDetectionLog.txt'
 errorLog = '/home/pi/log/errorLog.txt'
-	
+
 #--- difine goal latitude and longitude ---#
-lon2 = 139.910338 #unnga:139.5430 yakugaku:139.912130
-lat2 = 35.917945 #unga:35.553 yakugaku:35.920528
+lon2 = 139.909662 #nakaniwa:139.910338 #unnga:139.5430 yakugaku:139.912130
+lat2 = 35.917548 #nakaniwa:35.917945 #unga:35.553 yakugaku:35.920528
 
 pi = pigpio.pi()
 
