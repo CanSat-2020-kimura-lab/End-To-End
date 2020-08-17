@@ -131,9 +131,9 @@ if __name__ == '__main__':
 			IM920.Send('P1S')
 			Other.saveLog(phaseLog, '1', 'Program Started', time.time() - t_start)
 			IM920.Send('P1F')
-			phaseChk += 7
+			phaseChk += 1
 			print('phaseChk = '+str(phaseChk))
-		'''
+		
 		# --- Sleep Phase --- #
 		if phaseChk == 2:
 			IM920.Send('P2S')
@@ -240,38 +240,8 @@ if __name__ == '__main__':
 				IM920.Send('P6F')
 			phaseChk += 1
 			print('phaseChk = '+str(phaseChk))
-		'''
+		
 		while phaseChk == 8:
-			'''
-			# --- Parachute Avoidance Phase --- #
-			if phaseChk == 7:
-				IM920.Send('P7S')
-				Other.saveLog(phaseLog, '7', 'Parachute Avoidance Phase Started', time.time() - t_start)
-				t_ParaAvoidance_start = time.time()
-				print('Parachute Avoidance Phase Started {}'.format(time.time() - t_start))
-				while land_point_distance <= 1:
-					try:
-						flug = -1
-						while flug == -1:
-							#--- first parachute detection ---#
-							flug, area, photoname = ParaDetection.ParaDetection("/home/pi/photo/photo",320,240,200,10,120)
-							Other.saveLog(ParaAvoidanceLog, 'ParaAvoidance', time.time() - t_start, flug, area, photoname, GPS.readGPS())
-						ParaAvoidance.Parachute_Avoidance(flug,t_start)
-						land_point_distance = ParaAvoidance.Parachute_area_judge(longitude_land,latitude_land)
-						print('land_point_distance = ', land_point_distance)
-					except KeyboardInterrupt:
-						print("Emergency!")
-						run = pwm_control.Run()
-						run.stop()
-					except:
-						run = pwm_control.Run()
-						run.stop()
-						print(traceback.format_exc())
-				print('finish')
-				IM920.Send('P7F')
-				phaseChk += 1
-				print('phaseChk = '+str(phaseChk))
-			'''
 			# --- Run Phase --- #
 			if phaseChk == 8:
 				IM920.Send('P8S')
