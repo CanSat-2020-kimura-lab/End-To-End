@@ -243,35 +243,35 @@ if __name__ == '__main__':
 			print('phaseChk = '+str(phaseChk))
 
 		if phaseChk == 7:
-		IM920.Send('P7S')
-		Other.saveLog(phaseLog, '7', 'Parachute Avoidance Phase Started', time.time() - t_start)
-		t_ParaAvoidance_start = time.time()
-		print('Parachute Avoidance Phase Started {}'.format(time.time() - t_start))
+			IM920.Send('P7S')
+			Other.saveLog(phaseLog, '7', 'Parachute Avoidance Phase Started', time.time() - t_start)
+			t_ParaAvoidance_start = time.time()
+			print('Parachute Avoidance Phase Started {}'.format(time.time() - t_start))
 
-		while land_point_distance <= 1:
-			try:
-				flug = -1
-				while flug == -1:
-					#--- first parachute detection ---#
-					flug, area, photoname = ParaDetection.ParaDetection("/home/pi/photo/photo",320,240,200,10,120)
-					Other.saveLog(ParaAvoidanceLog, 'ParaAvoidance', time.time() - t_start, flug, area, photoname, GPS.readGPS())
-				ParaAvoidance.Parachute_Avoidance(flug,t_start)
-				land_point_distance = ParaAvoidance.Parachute_area_judge(longitude_land,latitude_land)
+			while land_point_distance <= 1:
+				try:
+					flug = -1
+					while flug == -1:
+						#--- first parachute detection ---#
+						flug, area, photoname = ParaDetection.ParaDetection("/home/pi/photo/photo",320,240,200,10,120)
+						Other.saveLog(ParaAvoidanceLog, 'ParaAvoidance', time.time() - t_start, flug, area, photoname, GPS.readGPS())
+					ParaAvoidance.Parachute_Avoidance(flug,t_start)
+					land_point_distance = ParaAvoidance.Parachute_area_judge(longitude_land,latitude_land)
 
-			except KeyboardInterrupt:
-				print("Emergency!")
-				run = pwm_control.Run()
-				run.stop()
+				except KeyboardInterrupt:
+					print("Emergency!")
+					run = pwm_control.Run()
+					run.stop()
 
-			except:
-				run = pwm_control.Run()
-				run.stop()
-				print(traceback.format_exc())
-				
-		print('finish')
-		IM920.Send('P7F')
-		phaseChk += 1
-		print('phaseChk = '+str(phaseChk))
+				except:
+					run = pwm_control.Run()
+					run.stop()
+					print(traceback.format_exc())
+					
+			print('finish')
+			IM920.Send('P7F')
+			phaseChk += 1
+			print('phaseChk = '+str(phaseChk))
 				
 		# --- Run Phase --- #
 		if phaseChk == 8:
