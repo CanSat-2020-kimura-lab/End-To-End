@@ -93,8 +93,8 @@ errorLog = '/home/pi/log/errorLog.txt'
 missionLog = '/home/pi/log/missionLog.txt'
 	
 #--- difine goal latitude and longitude ---#
-lon2 = 139.909662 #nakaniwa:139.910338 #unnga:139.5430 yakugaku:139.912130
-lat2 = 35.917548 #nakaniwa:35.917945 #unga:35.553 yakugaku:35.920528
+lon2 = 139.908495 #tyuusyajyou:139.909662 #nakaniwa:139.910338 #unnga:139.5430 yakugaku:139.912130
+lat2 = 35.918032 #tyuusyajyou:35.917548 #nakaniwa:35.917945 #unga:35.553 yakugaku:35.920528
 pi = pigpio.pi()
 
 def setup():
@@ -281,7 +281,6 @@ if __name__ == '__main__':
 			azimuth = direction['azimuth1']
 			print('goal distance = '+str(goal_distance))
 			print('goal azimuth = ' +str(azimuth))
-			goal_distance_before = goal_distance
 				
 			#------------- Calibration -------------#
 			print('Calibration Start')
@@ -300,8 +299,6 @@ if __name__ == '__main__':
 			magy_average = data[1]
 			#--- 0 <= θ <= 360 ---#
 			θ = Calibration3.calculate_angle_2D(magx_average,magy_average,magx_off,magy_off)
-
-			run_time = time.time()
 			# ------------- GPS navigate ------------- #
 			while goal_distance >= 5:
 				#--- judge whether rover face goal or not ---#
@@ -317,6 +314,8 @@ if __name__ == '__main__':
 							judge = 'T'
 						else:
 							judge = 'F'
+				else:
+					judge = 'T'
 
 				#--- if rover doesn't face goal, adjust angle ---#
 				if judge == 'F':
