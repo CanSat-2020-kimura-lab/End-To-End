@@ -279,6 +279,8 @@ if __name__ == '__main__':
 			direction = Calibration3.calculate_direction(lon2,lat2)
 			goal_distance = direction["distance"]
 			azimuth = direction['azimuth1']
+			print('goal distance = '+str(goal_distance))
+			print('goal azimuth = ' +str(azimuth))
 			goal_distance_before = goal_distance
 				
 			#------------- Calibration -------------#
@@ -334,6 +336,7 @@ if __name__ == '__main__':
 				goal_distance = direction["distance"]
 				azimuth = direction['azimuth1']
 				print('goal distance ='+str(goal_distance))
+				print('goal azimuth = ' +str(azimuth))
 				#--- calculate θ ---#
 				data = Calibration3.get_magdata_average()
 				magx_average = data[0]
