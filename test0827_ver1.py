@@ -129,7 +129,7 @@ if __name__ == '__main__':
 			IM920.Send('P1F')
 			phaseChk += 1
 			print('phaseChk = '+str(phaseChk))
-		
+		'''
 		# --- Release Phase --- #
 		if phaseChk == 2:
 			IM920.Send('P2S')
@@ -268,20 +268,14 @@ if __name__ == '__main__':
 			IM920.Send('P7F')
 			phaseChk += 1
 			print('phaseChk = '+str(phaseChk))
-				
+		'''		
 		# --- Run Phase --- #
 		if phaseChk == 8:
 			IM920.Send('P8S')
 			Other.saveLog(phaseLog, '8', 'Run Phase Started', time.time() - t_start)
 			t_Run_start = time.time()
 			print('Run Phase Started {}'.format(time.time() - t_start))
-			
-			direction = Calibration3.calculate_direction(lon2,lat2)
-			goal_distance = direction["distance"]
-			azimuth = direction['azimuth1']
-			print('goal distance = '+str(goal_distance))
-			print('goal azimuth = ' +str(azimuth))
-				
+							
 			#------------- Calibration -------------#
 			print('Calibration Start')
 			#--- calculate offset ---#
@@ -299,8 +293,16 @@ if __name__ == '__main__':
 			magy_average = data[1]
 			#--- 0 <= θ <= 360 ---#
 			θ = Calibration3.calculate_angle_2D(magx_average,magy_average,magx_off,magy_off)
+			
+			direction = Calibration3.calculate_direction(lon2,lat2)
+			goal_distance = direction["distance"]
+			azimuth = direction['azimuth1']
+			print('goal distance = '+str(goal_distance))
+			print('goal azimuth = ' +str(azimuth))
+
 			# ------------- GPS navigate ------------- #
 			while goal_distance >= 5:
+				'''
 				#--- judge whether rover face goal or not ---#
 				if azimuth - 30 > θ  or θ > azimuth + 30:
 					if 0 <= azimuth < 30:
@@ -324,7 +326,8 @@ if __name__ == '__main__':
 					run.stop()
 					#------------- rotate contorol -------------#
 					Calibration3.rotate_control(θ,azimuth,t_start)
-
+				'''
+				Calibration3.rotate_control(θ,azimuth,t_start)
 				#------------- run straight -------------#
 				print('Go straight')
 				run = pwm_control.Run()
@@ -343,7 +346,7 @@ if __name__ == '__main__':
 				#--- 0 <= θ <= 360 ---#
 				θ = Calibration3.calculate_angle_2D(magx_average,magy_average,magx_off,magy_off)
 				#--- save log ---#
-				Other.saveLog(Run_GPSLog, 'Run_GPS', time.time() - t_start, goal_distance, land_point_distance, GPS.readGPS())
+				#Other.saveLog(Run_GPSLog, 'Run_GPS', time.time() - t_start, goal_distance, land_point_distance, GPS.readGPS())
 
 			phaseChk += 1
 			run = pwm_control.Run()
@@ -415,4 +418,5 @@ if __name__ == '__main__':
 		close()
 
 	finally:
+		print('phaseChk = '+str(phaseChk))
 		print('end')
