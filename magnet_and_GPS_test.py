@@ -124,11 +124,12 @@ def calculate_angle_2D(magx,magy,magx_off,magy_off):
 			θ = 180 + θ #90 <= θ <= 180
 		if magx-magx_off > 0 and magy-magy_off < 0: #Fourth quadrant
 			θ = 360 + θ #270 <= θ <= 360
-	
+	'''
 	#--- Half turn  ---#
 	θ += 180
 	if θ >= 360:
 		θ -= 360
+	'''
 	#print('magx-magx_off = '+str(magx-magx_off))
 	#print('magy-magy_off = '+str(magy-magy_off))
 	print('calculate:θ = '+str(θ))
